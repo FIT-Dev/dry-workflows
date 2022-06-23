@@ -134,8 +134,6 @@ jobs:
           docker context use default
           docker login -u ${{ secrets.cr_username }} -p ${{ secrets.cr_token }}
 
-      # - run: docker pull ${{ needs.build.outputs.imageTag }}
-
       - name: Run Snyk to check Docker image for vulnerabilities
         uses: snyk/actions/docker@master
         env:
@@ -156,24 +154,13 @@ jobs:
           if grep -wq ${GITHUB_REF#refs/*/} tmp_docker; then echo "::notice title=image build verified::${{ steps.meta.outputs.tags }} image found" ; else echo "::error title=build error::${{ steps.meta.outputs.tags }} not found"; fi
 
       - name: Push Docker Image to Container Registry
-        run: |
-          export DOCKER_CONTENT_TRUST=1
-          cat <<EOT >> ${{secrets.signer_key}}
-          ${{ secrets.dct_signer_priv_key }}
-          EOT
-          chmod 600 ${{secrets.signer_key}}
-          export DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE=${{ secrets.signer_pass }}
-          docker trust key load ${{ secrets.signer_key }}
-          docker trust sign ${{ needs.build.outputs.imageTag }}
-          docker trust inspect --pretty ${{ needs.build.outputs.imageTag }}
+        run: docker push ${{ needs.build.outputs.imageTag }}
 
   runner-cleanup:
     needs: [push]
     runs-on: [self-hosted, fit-runner-1]
 
     steps:
-      - name: Cleanup Signer
-        run: rm ${{secrets.signer_key}}
 
       - name: Prune Images
         run: |
