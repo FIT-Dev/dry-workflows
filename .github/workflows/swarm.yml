@@ -32,7 +32,7 @@ env:
 jobs:
 
   define:
-    runs-on: [self-hosted, fit-runner-1]
+    runs-on: ubuntu-latest
 
     outputs:
       nodeEnv: ${{ steps.nodeEnv.outputs.value }}
@@ -61,8 +61,10 @@ jobs:
             echo "::set-output name=value::dev-stack"
             echo "::notice title=composeFile::dev-stack"
           else
-            echo "::set-output name=value::${{ inputs.compose_file }}"
-            echo "::notice title=composeFile::${{ inputs.compose_file }}"
+            # echo "::set-output name=value::${{ inputs.compose_file }}"
+            # echo "::notice title=composeFile::${{ inputs.compose_file }}"
+            echo "::set-output name=value::stack"
+            echo "::notice title=composeFile::stack"
           fi
       - id: runner
         run: |
@@ -79,7 +81,7 @@ jobs:
         run : echo "::notice title=branch::${{ github.event.base_ref }}"
 
   metadata:
-    runs-on: [self-hosted, fit-runner-1]
+    runs-on: ubuntu-latest 
 
     outputs:
       imageTag: ${{ steps.meta.outputs.tags }}
@@ -94,7 +96,7 @@ jobs:
 
   swarm-deploy:
     needs: [metadata, define]
-    runs-on: [self-hosted, '${{ needs.define.outputs.runner }}']
+    runs-on: [self-hosted]
 
     steps:
       - name: Login to Docker Hub
