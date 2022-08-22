@@ -90,7 +90,7 @@ jobs:
           service_name: ${{ env.SERVICE_NAME }}
           repository_name: ${{github.event.repository.name}}
           repository_url: ${{github.event.repository.url}}
-          target_env: ${{ needs.define.outputs.nodeEnv }}
+          target_env: ${{ needs.define.outputs.targetEnv }}
 
   swarm-deploy:
     needs: [metadata, define]
