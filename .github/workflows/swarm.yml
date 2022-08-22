@@ -39,12 +39,12 @@ jobs:
     runs-on: ubuntu-latest
 
     outputs:
-      nodeEnv: ${{ steps.nodeEnv.outputs.value }}
+      targetEnv: ${{ steps.targetEnv.outputs.value }}
       composeFile: ${{ steps.composeFile.outputs.value }}
       runner: ${{ steps.runner.outputs.value }}
 
     steps:
-      - id: nodeEnv
+      - id: targetEnv
         run: |
           if ${{endsWith(github.event.ref, 'prod')}}
           then
