@@ -83,8 +83,8 @@ jobs:
         id: mantichor-agent 
         uses: mantichor/agent@v0.1.2
         env:
-          mantichor_client_id: ${{secrets.client_id}}
-          mantichor_client_token: ${{secrets.client_token}}
+          mantichor_client_id: ${{secrets.mantichor_client_id}}
+          mantichor_client_token: ${{secrets.mantichor_client_token}}
           mantichor_url: ${{secrets.MANTICHOR_URL}}
           step: deploy
           service_name: ${{ env.SERVICE_NAME }}
