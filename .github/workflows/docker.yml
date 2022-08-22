@@ -47,7 +47,7 @@ jobs:
 
     outputs:
       continueOnError: ${{ steps.strictScan.outputs.continueOnError }}
-      runner: ${{ steps.runner.outputs.value }}
+      # runner: ${{ steps.runner.outputs.value }}
 
     steps:
       - id: strictScan
@@ -60,17 +60,17 @@ jobs:
             echo "::set-output name=continueOnError::${{ toJSON(false) }}"
             echo "::notice title=continueOnError::false"
           fi
-      - id: runner
-        run: |
-          if ${{startsWith(inputs.docker_context, 'PM')}}
-          then
-            echo "::set-output name=value::fit-runner-1"
-            echo "::notice title=runner::fit-runner-1"
-          elif ${{startsWith(inputs.docker_context, 'DMS')}}
-          then
-            echo "::set-output name=value::dms-runner-1"
-            echo "::notice title=runner::dms-runner-1"
-          fi
+      # - id: runner
+      #   run: |
+      #     if ${{startsWith(inputs.docker_context, 'PM')}}
+      #     then
+      #       echo "::set-output name=value::fit-runner-1"
+      #       echo "::notice title=runner::fit-runner-1"
+      #     elif ${{startsWith(inputs.docker_context, 'DMS')}}
+      #     then
+      #       echo "::set-output name=value::dms-runner-1"
+      #       echo "::notice title=runner::dms-runner-1"
+      #     fi
 
   code-scan:
     needs: define
