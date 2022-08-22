@@ -7,19 +7,19 @@ on:
         description: 'Name of service/web app'
         required: false
         type: string
-      published_port:
-        required: true
-        type: number
-      target_port:
-        required: false
-        type: number
-        default: 3300
-      compose_file:
-        required: false
-        type: string
-      docker_context:
-        required: true
-        type: string
+      # published_port:
+      #   required: true
+      #   type: number
+      # target_port:
+      #   required: false
+      #   type: number
+      #   default: 3300
+      # compose_file:
+      #   required: false
+      #   type: string
+      # docker_context:
+      #   required: true
+      #   type: string
     secrets:
       cr_username:
         required: true
