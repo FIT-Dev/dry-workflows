@@ -11,10 +11,10 @@ on:
         required: false
         type: number
         default: 3300
-      node_base_image:
-        required: false
-        type: string
-        default: pinjammodal/node:12.22.9-3.14
+      # node_base_image:
+      #   required: false
+      #   type: string
+      #   default: pinjammodal/node:12.22.9-3.14
       env_file:
         description: 'Use to load environment variable from file'
         required: false
@@ -28,14 +28,20 @@ on:
         required: true
       cr_token:
         required: true
-      signer_key:
+      mantichor_client_id:
         required: true
-      dct_signer_priv_key:
+      mantichor_client_token:
         required: true
-      signer_pass:
+      mantichor_url:
         required: true
       snyk_token:
         required: true
+      # signer_key:
+      #   required: true
+      # dct_signer_priv_key:
+      #   required: true
+      # signer_pass:
+      #   required: true
 
 env:
   SERVICE_NAME: ${{ inputs.service_name || github.event.repository.name  }}
@@ -77,7 +83,7 @@ jobs:
     runs-on: [self-hosted]
 
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v3
 
       - run: docker context use default
 
@@ -105,11 +111,29 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
+      - name: mantichor-agent
+        id: mantichor-agent 
+        uses: mantichor/agent@v0.1.2
+        env:
+          mantichor_client_id: ${{secrets.mantichor_client_id}}
+          mantichor_client_token: ${{secrets.mantichor_client_token}}
+          mantichor_url: ${{secrets.mantichor_url}}
+          step: build
+          service_name: ${{ env.SERVICE_NAME }}
+          repository_name: ${{github.event.repository.name}}
+          repository_url: ${{github.event.repository.url}}
+          target_env: ${{ needs.define.outputs.targetEnv }}
+
+      - id: setJSON
+        run: echo "::set-output name=baseImageJSON::${{ steps.mantichor-agent.outputs.manifest }}"
+
+      - run: echo "${{fromJSON(steps.setJSON.outputs.baseImageJSON).base_image}}"
+
       - name: Docker Meta
         id: meta
         run: echo "::set-output name=tags::pinjammodal/${{ env.SERVICE_NAME }}:${GITHUB_REF#refs/*/}" 
 
-      - name: Notice meta
+      - name: Notice Meta
         run: echo "::notice title=meta tag created::${{ steps.meta.outputs.tags }}"
 
       - name: Set Context Default
@@ -132,7 +156,7 @@ jobs:
           outputs: type=docker
           tags: ${{ steps.meta.outputs.tags }}
           build-args: |
-            NODE_BASE=${{ inputs.node_base_image }}
+            NODE_BASE=${{fromJSON(steps.setJSON.outputs.baseImageJSON).base_image}}
 
   container-scan:
     needs: [define, build]
@@ -173,7 +197,6 @@ jobs:
     runs-on: [self-hosted]
 
     steps:
-
       - name: Prune Images
         run: |
           docker context use default
