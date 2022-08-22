@@ -76,7 +76,7 @@ jobs:
 
   metadata:
     needs: [define]
-    runs-on: ubuntu-latest 
+    runs-on: [self-hosted]
 
     outputs:
       imageTag: ${{ steps.meta.outputs.tags }}
