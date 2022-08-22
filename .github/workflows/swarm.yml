@@ -48,15 +48,15 @@ jobs:
         run: |
           if ${{endsWith(github.event.ref, 'prod')}}
           then
-            echo "::set-output name=value::production"
-            echo "::notice title=targetEnv::prod"
+            echo "::set-output name=value::prod"
+            echo "::notice title=targetEnv::production"
           elif ${{endsWith(github.event.ref, 'staging')}}
           then
             echo "::set-output name=value::staging"
             echo "::notice title=targetEnv::staging"
           else
-            echo "::set-output name=value::development"
-            echo "::notice title=targetEnv::dev"
+            echo "::set-output name=value::dev"
+            echo "::notice title=targetEnv::development"
           fi    
       # - id: runner
       #   run: |
