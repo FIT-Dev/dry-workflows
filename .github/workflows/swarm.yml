@@ -29,6 +29,8 @@ on:
         required: true
       mantichor_client_token:
         required: true
+      mantichor_url:
+        required: true
 
 env:
   SERVICE_NAME: ${{ inputs.service_name || github.event.repository.name  }}
@@ -86,7 +88,7 @@ jobs:
         env:
           mantichor_client_id: ${{secrets.mantichor_client_id}}
           mantichor_client_token: ${{secrets.mantichor_client_token}}
-          mantichor_url: ${{secrets.MANTICHOR_URL}}
+          mantichor_url: ${{secrets.mantichor_url}}
           step: deploy
           service_name: ${{ env.SERVICE_NAME }}
           repository_name: ${{github.event.repository.name}}
