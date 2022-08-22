@@ -40,8 +40,8 @@ jobs:
 
     outputs:
       targetEnv: ${{ steps.targetEnv.outputs.value }}
-      composeFile: ${{ steps.composeFile.outputs.value }}
-      runner: ${{ steps.runner.outputs.value }}
+      # composeFile: ${{ steps.composeFile.outputs.value }}
+      # runner: ${{ steps.runner.outputs.value }}
 
     steps:
       - id: targetEnv
@@ -73,6 +73,7 @@ jobs:
         run : echo "::notice title=branch::${{ github.event.base_ref }}"
 
   metadata:
+    needs: [define]
     runs-on: ubuntu-latest 
 
     outputs:
