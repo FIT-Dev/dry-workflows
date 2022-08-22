@@ -79,7 +79,7 @@ jobs:
     runs-on: [self-hosted]
 
     outputs:
-      imageTag: ${{ steps.meta.outputs.tags }}
+      manifest: ${{ steps.mantichor-agent.outputs.manifest }}
 
     steps:
       - name: Fetch Deploy Property
@@ -107,7 +107,7 @@ jobs:
           password: ${{ secrets.cr_token }}
 
       - name: parse manifest
-        run: echo "manifest is ${{ steps.mantichor-agent.outputs.manifest }}"
+        run: echo "manifest is ${{ needs.metadata.outputs.manifest }}"
 
       # - name: Set Context
       #   run: docker context use ${{ inputs.docker_context }}
