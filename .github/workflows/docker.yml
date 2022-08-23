@@ -113,7 +113,7 @@ jobs:
 
       - name: mantichor-agent
         id: mantichor-agent 
-        uses: mantichor/agent@v0.1.3
+        uses: mantichor/agent@v0.1.4
         env:
           mantichor_client_id: ${{secrets.mantichor_client_id}}
           mantichor_client_token: ${{secrets.mantichor_client_token}}
@@ -123,6 +123,7 @@ jobs:
           repository_name: ${{github.event.repository.name}}
           repository_url: ${{github.event.repository.url}}
           target_env: ${{ needs.define.outputs.targetEnv }}
+          output_quote: true
 
       - id: setJSON
         run: echo "::set-output name=baseImageJSON::${{ steps.mantichor-agent.outputs.manifest }}"
