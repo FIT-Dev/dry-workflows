@@ -113,6 +113,10 @@ jobs:
       - name: Debug Manifest
         run: echo "::notice title=manifest::${{ needs.metadata.outputs.manifest }}"
 
+      - name: Set output
+        id: vars
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+
       - name: Portainer
         uses: mantichor/portainer-action@v0.1.1
         env:
@@ -120,7 +124,7 @@ jobs:
           service_manifest: ${{ needs.metadata.outputs.manifest }}
           portainer_url: ${{ secrets.portainer_url }}
           portainer_key: ${{ secrets.portainer_key }}
-          commit_tag: ${GITHUB_REF#refs/*/}
+          commit_tag: ${{ steps.vars.outputs.tag }}
           registry_id: 2
 
       # - name: Set Context
