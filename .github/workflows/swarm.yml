@@ -114,7 +114,7 @@ jobs:
         run: echo "::notice title=manifest::${{ needs.metadata.outputs.manifest }}"
 
       - name: Portainer
-        uses: mantichor/portainer-action@v0.1.0
+        uses: mantichor/portainer-action@v0.1.1
         env:
           service_name: ${{ env.SERVICE_NAME }}
           service_manifest: ${{ needs.metadata.outputs.manifest }}
