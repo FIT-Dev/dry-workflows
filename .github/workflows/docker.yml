@@ -99,7 +99,7 @@ jobs:
           step: build
           service_name: ${{ env.SERVICE_NAME }}
           repository_name: ${{github.repository}}
-          repository_url: $GITHUB_SERVER_URL/${{github.repository}}
+          repository_url: ${GITHUB_SERVER_URL}/${{github.repository}}
           target_env: ${{ needs.define.outputs.targetEnv }}
           output_quote: true
 
