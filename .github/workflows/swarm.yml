@@ -70,8 +70,8 @@ jobs:
           mantichor_url: ${{secrets.mantichor_url}}
           step: deploy
           service_name: ${{ env.SERVICE_NAME }}
-          repository_name: ${{github.repository}}
-          repository_url: ${GITHUB_SERVER_URL}/${{github.repository}}
+          # repository_name: ${{github.repository}}
+          # repository_url: ${GITHUB_SERVER_URL}/${{github.repository}}
           target_env: ${{ needs.define.outputs.targetEnv }}
 
   swarm-deploy:

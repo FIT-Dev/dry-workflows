@@ -89,6 +89,10 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
+      - name: Set output
+        id: vars
+        run: echo ::set-output name=repourl::${GITHUB_SERVER_URL}/${{github.repository}}
+
       - name: mantichor-agent
         id: mantichor-agent 
         uses: mantichor/agent@v0.1.4
@@ -99,7 +103,7 @@ jobs:
           step: build
           service_name: ${{ env.SERVICE_NAME }}
           repository_name: ${{github.repository}}
-          repository_url: ${GITHUB_SERVER_URL}/${{github.repository}}
+          repository_url: ${{ steps.vars.outputs.repourl }}
           target_env: ${{ needs.define.outputs.targetEnv }}
           output_quote: true
 
