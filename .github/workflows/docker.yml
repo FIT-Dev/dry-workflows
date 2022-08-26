@@ -74,8 +74,33 @@ jobs:
           args: --severity-threshold=high
           command: test
 
+  fetch-prop:
+    runs-on: [self-hosted]
+
+    outputs:
+      manifest: ${{ steps.mantichor-agent.outputs.manifest }}
+
+    steps:
+      - name: Set output
+        id: vars
+        run: echo ::set-output name=repourl::${GITHUB_SERVER_URL}/${{github.repository}}
+
+      - name: mantichor-agent
+        id: mantichor-agent 
+        uses: mantichor/agent@v0.1.4
+        env:
+          mantichor_client_id: ${{secrets.mantichor_client_id}}
+          mantichor_client_token: ${{secrets.mantichor_client_token}}
+          mantichor_url: ${{secrets.mantichor_url}}
+          step: build
+          service_name: ${{ env.SERVICE_NAME }}
+          repository_name: ${{github.repository}}
+          repository_url: ${{ steps.vars.outputs.repourl }}
+          # target_env: ${{ needs.define.outputs.targetEnv }}
+          output_quote: true
+
   build:
-    needs: [define, code-scan]
+    needs: [fetch-prop, code-scan]
     runs-on: [self-hosted]
 
     outputs:
@@ -93,22 +118,22 @@ jobs:
         id: vars
         run: echo ::set-output name=repourl::${GITHUB_SERVER_URL}/${{github.repository}}
 
-      - name: mantichor-agent
-        id: mantichor-agent 
-        uses: mantichor/agent@v0.1.4
-        env:
-          mantichor_client_id: ${{secrets.mantichor_client_id}}
-          mantichor_client_token: ${{secrets.mantichor_client_token}}
-          mantichor_url: ${{secrets.mantichor_url}}
-          step: build
-          service_name: ${{ env.SERVICE_NAME }}
-          repository_name: ${{github.repository}}
-          repository_url: ${{ steps.vars.outputs.repourl }}
-          target_env: ${{ needs.define.outputs.targetEnv }}
-          output_quote: true
+      # - name: mantichor-agent
+      #   id: mantichor-agent 
+      #   uses: mantichor/agent@v0.1.4
+      #   env:
+      #     mantichor_client_id: ${{secrets.mantichor_client_id}}
+      #     mantichor_client_token: ${{secrets.mantichor_client_token}}
+      #     mantichor_url: ${{secrets.mantichor_url}}
+      #     step: build
+      #     service_name: ${{ env.SERVICE_NAME }}
+      #     repository_name: ${{github.repository}}
+      #     repository_url: ${{ steps.vars.outputs.repourl }}
+      #     target_env: ${{ needs.define.outputs.targetEnv }}
+      #     output_quote: true
 
       - id: setJSON
-        run: echo "::set-output name=baseImageJSON::${{ steps.mantichor-agent.outputs.manifest }}"
+        run: echo "::set-output name=baseImageJSON::${{ needs.fetch-prop.outputs.manifest }}"
 
       - run: echo "${{fromJSON(steps.setJSON.outputs.baseImageJSON).base_image}}"
 
