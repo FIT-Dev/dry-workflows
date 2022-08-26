@@ -11,10 +11,6 @@ on:
         required: false
         type: number
         default: 3300
-      node_base_image:
-        required: false
-        type: string
-        default: pinjammodal/node:12.22.9-3.14
       env_file:
         description: 'Use to load environment variable from file'
         required: false
@@ -28,11 +24,11 @@ on:
         required: true
       cr_token:
         required: true
-      signer_key:
+      mantichor_client_id:
         required: true
-      dct_signer_priv_key:
+      mantichor_client_token:
         required: true
-      signer_pass:
+      mantichor_url:
         required: true
       snyk_token:
         required: true
@@ -47,7 +43,6 @@ jobs:
 
     outputs:
       continueOnError: ${{ steps.strictScan.outputs.continueOnError }}
-      runner: ${{ steps.runner.outputs.value }}
 
     steps:
       - id: strictScan
@@ -60,24 +55,13 @@ jobs:
             echo "::set-output name=continueOnError::${{ toJSON(false) }}"
             echo "::notice title=continueOnError::false"
           fi
-      - id: runner
-        run: |
-          if ${{startsWith(inputs.docker_context, 'PM')}}
-          then
-            echo "::set-output name=value::fit-runner-1"
-            echo "::notice title=runner::fit-runner-1"
-          elif ${{startsWith(inputs.docker_context, 'DMS')}}
-          then
-            echo "::set-output name=value::dms-runner-1"
-            echo "::notice title=runner::dms-runner-1"
-          fi
 
   code-scan:
     needs: define
     runs-on: [self-hosted]
 
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v3
 
       - run: docker context use default
 
@@ -90,8 +74,33 @@ jobs:
           args: --severity-threshold=high
           command: test
 
+  fetch-prop:
+    runs-on: [self-hosted]
+
+    outputs:
+      manifest: ${{ steps.mantichor-agent.outputs.manifest }}
+
+    steps:
+      - name: Set output
+        id: vars
+        run: echo ::set-output name=repourl::${GITHUB_SERVER_URL}/${{github.repository}}
+
+      - name: mantichor-agent
+        id: mantichor-agent 
+        uses: mantichor/agent@v0.1.4
+        env:
+          mantichor_client_id: ${{secrets.mantichor_client_id}}
+          mantichor_client_token: ${{secrets.mantichor_client_token}}
+          mantichor_url: ${{secrets.mantichor_url}}
+          step: build
+          service_name: ${{ env.SERVICE_NAME }}
+          repository_name: ${{github.repository}}
+          repository_url: ${{ steps.vars.outputs.repourl }}
+          # target_env: ${{ needs.define.outputs.targetEnv }}
+          output_quote: true
+
   build:
-    needs: [define, code-scan]
+    needs: [fetch-prop, code-scan]
     runs-on: [self-hosted]
 
     outputs:
@@ -105,11 +114,34 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
+      - name: Set output
+        id: vars
+        run: echo ::set-output name=repourl::${GITHUB_SERVER_URL}/${{github.repository}}
+
+      # - name: mantichor-agent
+      #   id: mantichor-agent 
+      #   uses: mantichor/agent@v0.1.4
+      #   env:
+      #     mantichor_client_id: ${{secrets.mantichor_client_id}}
+      #     mantichor_client_token: ${{secrets.mantichor_client_token}}
+      #     mantichor_url: ${{secrets.mantichor_url}}
+      #     step: build
+      #     service_name: ${{ env.SERVICE_NAME }}
+      #     repository_name: ${{github.repository}}
+      #     repository_url: ${{ steps.vars.outputs.repourl }}
+      #     target_env: ${{ needs.define.outputs.targetEnv }}
+      #     output_quote: true
+
+      - id: setJSON
+        run: echo "::set-output name=baseImageJSON::${{ needs.fetch-prop.outputs.manifest }}"
+
+      - run: echo "${{fromJSON(steps.setJSON.outputs.baseImageJSON).base_image}}"
+
       - name: Docker Meta
         id: meta
         run: echo "::set-output name=tags::pinjammodal/${{ env.SERVICE_NAME }}:${GITHUB_REF#refs/*/}" 
 
-      - name: Notice meta
+      - name: Notice Meta
         run: echo "::notice title=meta tag created::${{ steps.meta.outputs.tags }}"
 
       - name: Set Context Default
@@ -132,7 +164,7 @@ jobs:
           outputs: type=docker
           tags: ${{ steps.meta.outputs.tags }}
           build-args: |
-            NODE_BASE=${{ inputs.node_base_image }}
+            NODE_BASE=${{fromJSON(steps.setJSON.outputs.baseImageJSON).base_image}}
 
   container-scan:
     needs: [define, build]
@@ -173,7 +205,6 @@ jobs:
     runs-on: [self-hosted]
 
     steps:
-
       - name: Prune Images
         run: |
           docker context use default

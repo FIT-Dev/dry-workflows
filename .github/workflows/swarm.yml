@@ -7,23 +7,20 @@ on:
         description: 'Name of service/web app'
         required: false
         type: string
-      published_port:
-        required: true
-        type: number
-      target_port:
-        required: false
-        type: number
-        default: 3300
-      compose_file:
-        required: false
-        type: string
-      docker_context:
-        required: true
-        type: string
     secrets:
       cr_username:
         required: true
       cr_token:
+        required: true
+      mantichor_client_id:
+        required: true
+      mantichor_client_token:
+        required: true
+      mantichor_url:
+        required: true
+      portainer_url:
+        required: true
+      portainer_key:
         required: true
 
 env:
@@ -35,64 +32,45 @@ jobs:
     runs-on: ubuntu-latest
 
     outputs:
-      nodeEnv: ${{ steps.nodeEnv.outputs.value }}
-      composeFile: ${{ steps.composeFile.outputs.value }}
-      runner: ${{ steps.runner.outputs.value }}
+      targetEnv: ${{ steps.targetEnv.outputs.value }}
 
     steps:
-      - id: nodeEnv
+      - id: targetEnv
         run: |
           if ${{endsWith(github.event.ref, 'prod')}}
           then
-            echo "::set-output name=value::production"
-            echo "::notice title=NODE_ENV::production"
+            echo "::set-output name=value::prod"
+            echo "::notice title=targetEnv::production"
+          elif ${{endsWith(github.event.ref, 'staging')}}
+          then
+            echo "::set-output name=value::staging"
+            echo "::notice title=targetEnv::staging"
           else
-            echo "::set-output name=value::development"
-            echo "::notice title=NODE_ENV::development"
-          fi
-      - id: composeFile
-        run: |
-          if ${{ inputs.compose_file == ''}} && ${{endsWith(github.event.ref, 'prod')}}
-          then
-            echo "::set-output name=value::prod-stack"
-            echo "::notice title=composeFile::prod-stack"
-          elif ${{ inputs.compose_file == ''}} && ${{endsWith(github.event.ref, 'dev')}}
-          then
-            echo "::set-output name=value::dev-stack"
-            echo "::notice title=composeFile::dev-stack"
-          else
-            # echo "::set-output name=value::${{ inputs.compose_file }}"
-            # echo "::notice title=composeFile::${{ inputs.compose_file }}"
-            echo "::set-output name=value::stack"
-            echo "::notice title=composeFile::stack"
-          fi
-      - id: runner
-        run: |
-          if ${{startsWith(inputs.docker_context, 'PM')}}
-          then
-            echo "::set-output name=value::fit-runner-1"
-            echo "::notice title=runner::fit-runner-1"
-          elif ${{startsWith(inputs.docker_context, 'DMS')}}
-          then
-            echo "::set-output name=value::dms-runner-1"
-            echo "::notice title=runner::dms-runner-1"
-          fi
+            echo "::set-output name=value::dev"
+            echo "::notice title=targetEnv::development"
+          fi    
+          
       - name: Check Branch
         run : echo "::notice title=branch::${{ github.event.base_ref }}"
 
   metadata:
-    runs-on: ubuntu-latest 
+    needs: [define]
+    runs-on: [self-hosted]
 
     outputs:
-      imageTag: ${{ steps.meta.outputs.tags }}
+      manifest: ${{ steps.mantichor-agent.outputs.manifest }}
 
     steps:
-      - name: Docker Meta
-        id: meta
-        run: echo "::set-output name=tags::pinjammodal/${{ env.SERVICE_NAME }}:${GITHUB_REF#refs/*/}" 
-
-      - name: Notice Meta
-        run: echo "::notice title=meta tag created::${{ steps.meta.outputs.tags }}"
+      - name: Fetch Deploy Property
+        id: mantichor-agent 
+        uses: mantichor/agent@v0.1.4
+        env:
+          mantichor_client_id: ${{secrets.mantichor_client_id}}
+          mantichor_client_token: ${{secrets.mantichor_client_token}}
+          mantichor_url: ${{secrets.mantichor_url}}
+          step: deploy
+          service_name: ${{ env.SERVICE_NAME }}
+          target_env: ${{ needs.define.outputs.targetEnv }}
 
   swarm-deploy:
     needs: [metadata, define]
@@ -104,53 +82,20 @@ jobs:
         with:
           username: ${{ secrets.cr_username }} 
           password: ${{ secrets.cr_token }}
-      
-      - name: Set Context
-        run: docker context use ${{ inputs.docker_context }}
 
-      - name: Check stack
-        run: echo "STACK=$(docker stack ls | grep -c ${{ env.SERVICE_NAME }}[[:space:]])" >> $GITHUB_ENV
+      - name: Debug Manifest
+        run: echo "::notice title=manifest::${{ needs.metadata.outputs.manifest }}"
 
-      - uses: actions/setup-node@v3
-        if: env.STACK == 0
-        with:
-          node-version: '12'
+      - name: Set output
+        id: vars
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
 
-      - run: npm install -g mustache
-        if: env.STACK == 0
-
-      - name: Set template variable
-        if: env.STACK == 0
-        run: |
-          cat<<EOT >> deployment/templates/config.json
-          {
-            "service_name": "${{ env.SERVICE_NAME }}",
-            "image": "${{ needs.metadata.outputs.imageTag }}",
-            "node_env": "${{ needs.define.outputs.nodeEnv }}",
-            "target_port": "${{ inputs.target_port }}",
-            "published_port": "${{ inputs.published_port }}"
-          }
-          EOT
-
-      - name: Set Variable in Compose
-        if: env.STACK == 0
-        run: mustache deployment/templates/config.json deployment/templates/${{ needs.define.outputs.composeFile }}.mustache > deployment/${{ needs.define.outputs.composeFile }}.yml
-
-      - name: Check Service Network
-        if: env.STACK == 0
-        id: network
-        run: |
-          docker network ls > tmp
-          if grep -wq public tmp; then echo "::notice title=network exist::public network already exist" ; else echo "::set-output name=create::true"; fi
-
-      - name: Create Service Network
-        if: steps.network.outputs.create
-        run: docker network create -d overlay --attachable public
-
-      - name: Stack deploy
-        if: env.STACK == 0
-        run: docker stack deploy --resolve-image=always --with-registry-auth --compose-file deployment/${{ needs.define.outputs.composeFile }}.yml ${{ env.SERVICE_NAME }}
-
-      - name: Update current service
-        if: env.STACK == 1
-        run: docker service update --health-retries 3 --health-interval 5s --with-registry-auth --image ${{ needs.metadata.outputs.imageTag }} ${{ env.SERVICE_NAME }}_${{ env.SERVICE_NAME }}
+      - name: Portainer
+        uses: mantichor/portainer-action@v0.1.2
+        env:
+          service_name: ${{ env.SERVICE_NAME }}
+          service_manifest: ${{ needs.metadata.outputs.manifest }}
+          portainer_url: ${{ secrets.portainer_url }}
+          portainer_key: ${{ secrets.portainer_key }}
+          commit_tag: ${{ steps.vars.outputs.tag }}
+          registry_id: 2
