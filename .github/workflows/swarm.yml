@@ -100,5 +100,5 @@ jobs:
           service_manifest: ${{ needs.metadata.outputs.manifest }}
           portainer_url: ${{ secrets.portainer_url }}
           portainer_key: ${{ secrets.portainer_key }}
-          commit_tag: ${{ needs.swarm-deploy.outputs.vars-tag }}
+          commit_tag: ${{ steps.vars.outputs.tag }}
           registry_id: 2
