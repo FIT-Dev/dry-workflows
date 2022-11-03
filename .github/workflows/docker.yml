@@ -79,7 +79,6 @@ jobs:
 
     outputs:
       manifest: ${{ steps.mantichor-agent.outputs.manifest }}
-      repourl: ${{ steps.vars.outputs.repourl }}
 
     steps:
       - name: Set output repourl
@@ -96,7 +95,7 @@ jobs:
           step: build
           service_name: ${{ env.SERVICE_NAME }}
           repository_name: ${{github.repository}}
-          repository_url: ${{ needs.fetch-prop.outputs.repourl }}
+          repository_url: ${{ steps.vars.outputs.repourl }}
           # target_env: ${{ needs.define.outputs.targetEnv }}
           output_quote: true
 
@@ -106,7 +105,6 @@ jobs:
 
     outputs:
       imageTag: ${{ steps.meta.outputs.imageTag }}
-      baseImageJSON: ${{ steps.setJSON.outputs.baseImageJSON}}
 
     steps:
       - uses: actions/checkout@v3

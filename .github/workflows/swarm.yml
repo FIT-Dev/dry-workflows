@@ -75,9 +75,6 @@ jobs:
   swarm-deploy:
     needs: [metadata, define]
     runs-on: [self-hosted]
-    outputs:
-      vars-tag: ${{ steps.vars.outputs.tag }}
-
 
     steps:
       - name: Login to Docker Hub
