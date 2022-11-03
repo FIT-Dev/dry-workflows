@@ -49,10 +49,10 @@ jobs:
         run: |
           if ${{ inputs.strict_scan == 'false'}}
           then
-            echo "::set-output name=continueOnError::${{ toJSON(true) }}"
+            echo "continueOnError=${{ toJSON(true) }}" >> $GITHUB_OUTPUT 
             echo "::notice title=continueOnError::true"
           else
-            echo "::set-output name=continueOnError::${{ toJSON(false) }}"
+            echo "continueOnError=${{ toJSON(false) }}" >> $GITHUB_OUTPUT
             echo "::notice title=continueOnError::false"
           fi
 
