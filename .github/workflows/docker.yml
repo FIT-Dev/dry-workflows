@@ -160,7 +160,7 @@ jobs:
         with:
           context: .
           outputs: type=docker
-          tags: ${{ needs.build.outputs.imageTag }}
+          tags: ${{ steps.meta.outputs.imageTag }}
           build-args: |
             NODE_BASE=${{fromJSON(steps.setJSON.outputs.baseImageJSON).base_image}}
 
