@@ -71,6 +71,7 @@ jobs:
           step: deploy
           service_name: ${{ env.SERVICE_NAME }}
           target_env: ${{ needs.define.outputs.targetEnv }}
+          output_quote: true
 
   swarm-deploy:
     needs: [metadata, define]
