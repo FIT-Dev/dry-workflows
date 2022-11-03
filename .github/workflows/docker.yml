@@ -133,7 +133,7 @@ jobs:
       - id: setJSON
         run: echo "baseImageJSON=${{ needs.fetch-prop.outputs.manifest }}" >> $GITHUB_OUTPUT 
 
-      - run: echo "${{fromJSON(needs.build.outputs.baseImageJSON).base_image}}"
+      - run: echo "${{fromJSON(steps.setJSON.outputs.baseImageJSON).base_image}}"
 
       - name: Docker Meta
         id: meta
