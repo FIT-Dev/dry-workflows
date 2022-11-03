@@ -105,7 +105,7 @@ jobs:
     runs-on: [self-hosted]
 
     outputs:
-      imageTag: ${{ needs.build.outputs.imageTag }}
+      imageTag: ${{ steps.meta.outputs.imageTag }}
       baseImageJSON: ${{ steps.setJSON.outputs.baseImageJSON}}
 
     steps:
@@ -140,7 +140,7 @@ jobs:
         run: echo "imageTag=pinjammodal/${{ env.SERVICE_NAME }}:${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT 
 
       - name: Notice Meta
-        run: echo "::notice title=meta tag created::${{ needs.build.outputs.imageTag }}"
+        run: echo "::notice title=meta tag created::${{ steps.meta.outputs.imageTag }}"
 
       - name: Set Context Default
         run: docker context use default
