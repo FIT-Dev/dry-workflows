@@ -39,14 +39,14 @@ jobs:
         run: |
           if ${{endsWith(github.event.ref, 'prod')}}
           then
-            echo "::set-output name=value::prod"
+            echo "value=prod" >> $GITHUB_OUTPUT
             echo "::notice title=targetEnv::production"
           elif ${{endsWith(github.event.ref, 'staging')}}
           then
-            echo "::set-output name=value::staging"
+            echo "value=staging" >> $GITHUB_OUTPUT
             echo "::notice title=targetEnv::staging"
           else
-            echo "::set-output name=value::dev"
+            echo "value=dev" >> $GITHUB_OUTPUT
             echo "::notice title=targetEnv::development"
           fi    
           
@@ -75,6 +75,9 @@ jobs:
   swarm-deploy:
     needs: [metadata, define]
     runs-on: [self-hosted]
+    outputs:
+      vars-tag: ${{ steps.vars.outputs.tag }}
+
 
     steps:
       - name: Login to Docker Hub
@@ -88,7 +91,7 @@ jobs:
 
       - name: Set output
         id: vars
-        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+        run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
 
       - name: Portainer
         uses: mantichor/portainer-action@v0.1.2
@@ -97,5 +100,5 @@ jobs:
           service_manifest: ${{ needs.metadata.outputs.manifest }}
           portainer_url: ${{ secrets.portainer_url }}
           portainer_key: ${{ secrets.portainer_key }}
-          commit_tag: ${{ steps.vars.outputs.tag }}
+          commit_tag: ${{ needs.swarm-deploy.outputs.vars-tag }}
           registry_id: 2
