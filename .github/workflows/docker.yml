@@ -79,11 +79,12 @@ jobs:
 
     outputs:
       manifest: ${{ steps.mantichor-agent.outputs.manifest }}
+      repourl: ${{ steps.vars.outputs.repourl }}
 
     steps:
-      - name: Set output
+      - name: Set output repourl
         id: vars
-        run: echo ::set-output name=repourl::${GITHUB_SERVER_URL}/${{github.repository}}
+        run: echo "repourl=${GITHUB_SERVER_URL}/${{github.repository}}" >> $GITHUB_OUTPUT
 
       - name: mantichor-agent
         id: mantichor-agent 
@@ -95,7 +96,7 @@ jobs:
           step: build
           service_name: ${{ env.SERVICE_NAME }}
           repository_name: ${{github.repository}}
-          repository_url: ${{ steps.vars.outputs.repourl }}
+          repository_url: ${{ needs.fetch-prop.outputs.repourl }}
           # target_env: ${{ needs.define.outputs.targetEnv }}
           output_quote: true
 
@@ -104,7 +105,8 @@ jobs:
     runs-on: [self-hosted]
 
     outputs:
-      imageTag: ${{ steps.meta.outputs.tags }}
+      imageTag: ${{ needs.build.outputs.imageTag }}
+      baseImageJSON: ${{ steps.setJSON.outputs.baseImageJSON}}
 
     steps:
       - uses: actions/checkout@v3
@@ -113,10 +115,6 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-
-      - name: Set output
-        id: vars
-        run: echo ::set-output name=repourl::${GITHUB_SERVER_URL}/${{github.repository}}
 
       # - name: mantichor-agent
       #   id: mantichor-agent 
@@ -133,16 +131,16 @@ jobs:
       #     output_quote: true
 
       - id: setJSON
-        run: echo "::set-output name=baseImageJSON::${{ needs.fetch-prop.outputs.manifest }}"
+        run: echo "baseImageJSON=${{ needs.fetch-prop.outputs.manifest }}" >> $GITHUB_OUTPUT 
 
-      - run: echo "${{fromJSON(steps.setJSON.outputs.baseImageJSON).base_image}}"
+      - run: echo "${{fromJSON(needs.build.outputs.baseImageJSON).base_image}}"
 
       - name: Docker Meta
         id: meta
-        run: echo "::set-output name=tags::pinjammodal/${{ env.SERVICE_NAME }}:${GITHUB_REF#refs/*/}" 
+        run: echo "imageTag=pinjammodal/${{ env.SERVICE_NAME }}:${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT 
 
       - name: Notice Meta
-        run: echo "::notice title=meta tag created::${{ steps.meta.outputs.tags }}"
+        run: echo "::notice title=meta tag created::${{ needs.build.outputs.imageTag }}"
 
       - name: Set Context Default
         run: docker context use default
@@ -162,9 +160,9 @@ jobs:
         with:
           context: .
           outputs: type=docker
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ${{ needs.build.outputs.imageTag }}
           build-args: |
-            NODE_BASE=${{fromJSON(steps.setJSON.outputs.baseImageJSON).base_image}}
+            NODE_BASE=${{fromJSON(needs.build.outputs.baseImageJSON).base_image}}
 
   container-scan:
     needs: [define, build]
@@ -195,7 +193,7 @@ jobs:
       - name: Check Build Result
         run: |
           docker images | grep ${{ env.SERVICE_NAME }} > tmp_docker
-          if grep -wq ${GITHUB_REF#refs/*/} tmp_docker; then echo "::notice title=image build verified::${{ steps.meta.outputs.tags }} image found" ; else echo "::error title=build error::${{ steps.meta.outputs.tags }} not found"; fi
+          if grep -wq ${GITHUB_REF#refs/*/} tmp_docker; then echo "::notice title=image build verified::${{ needs.build.outputs.imageTag }} image found" ; else echo "::error title=build error::${{ needs.build.outputs.imageTag }} not found"; fi
 
       - name: Push Docker Image to Container Registry
         run: docker push ${{ needs.build.outputs.imageTag }}
