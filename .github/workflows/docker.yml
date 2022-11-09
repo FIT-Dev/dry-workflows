@@ -79,7 +79,7 @@ jobs:
 
     outputs:
       base_image: ${{ steps.mantichor-agent.outputs.base_image }}
-      bypass_code_scan: ${{ steps.mantichor-agent.outputs.bypass_code_scan }}
+      bypass_code_scan: ${{ toJSON(steps.mantichor-agent.outputs.bypass_code_scan) }}
 
 
     steps:
