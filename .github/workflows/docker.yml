@@ -38,26 +38,26 @@ env:
   STRICT_SCAN: ${{ inputs.strict_scan || false }}
 
 jobs:
-  define:
-    runs-on: ubuntu-latest
+  # define:
+  #   runs-on: ubuntu-latest
 
-    outputs:
-      continueOnError: ${{ steps.strictScan.outputs.continueOnError }}
+  #   outputs:
+  #     continueOnError: ${{ steps.strictScan.outputs.continueOnError }}
 
-    steps:
-      - id: strictScan
-        run: |
-          if ${{ inputs.strict_scan == 'false'}}
-          then
-            echo "continueOnError=${{ toJSON(true) }}" >> $GITHUB_OUTPUT 
-            echo "::notice title=continueOnError::true"
-          else
-            echo "continueOnError=${{ toJSON(false) }}" >> $GITHUB_OUTPUT
-            echo "::notice title=continueOnError::false"
-          fi
+  #   steps:
+  #     - id: strictScan
+  #       run: |
+  #         if ${{ inputs.strict_scan == 'false'}}
+  #         then
+  #           echo "continueOnError=${{ toJSON(true) }}" >> $GITHUB_OUTPUT 
+  #           echo "::notice title=continueOnError::true"
+  #         else
+  #           echo "continueOnError=${{ toJSON(false) }}" >> $GITHUB_OUTPUT
+  #           echo "::notice title=continueOnError::false"
+  #         fi
 
   code-scan:
-    needs: define
+    needs: [define, fetch-prop]
     runs-on: [self-hosted]
 
     steps:
@@ -67,7 +67,7 @@ jobs:
 
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/node@master
-        continue-on-error: ${{ fromJSON(needs.define.outputs.continueOnError) }}
+        continue-on-error: ${{needs.fetch-prop.outputs.bypass_code_scan}}
         env:
           SNYK_TOKEN: ${{ secrets.snyk_token }}
         with:
@@ -78,7 +78,9 @@ jobs:
     runs-on: [self-hosted]
 
     outputs:
-      manifest: ${{ steps.mantichor-agent.outputs.manifest }}
+      base_image: ${{ steps.mantichor-agent.outputs.base_image }}
+      bypass_code_scan: ${{ steps.mantichor-agent.outputs.bypass_code_scan }}
+
 
     steps:
       - name: Set output repourl
