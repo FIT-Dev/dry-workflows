@@ -57,7 +57,7 @@ jobs:
   #         fi
 
   code-scan:
-    needs: [define, fetch-prop]
+    needs: [fetch-prop]
     runs-on: [self-hosted]
 
     steps:
@@ -166,7 +166,7 @@ jobs:
             NODE_BASE=${{needs.fetch-prop.outputs.base_image}}
 
   container-scan:
-    needs: [define, build]
+    needs: [build]
     runs-on: [self-hosted]
     
     steps:
@@ -187,7 +187,7 @@ jobs:
           command: test
 
   push:
-    needs: [define, build, container-scan]
+    needs: [build, container-scan]
     runs-on: [self-hosted]
 
     steps:
@@ -200,7 +200,7 @@ jobs:
         run: docker push ${{ needs.build.outputs.imageTag }}
 
   runner-cleanup:
-    needs: [define, push]
+    needs: [push]
     runs-on: [self-hosted]
 
     steps:
