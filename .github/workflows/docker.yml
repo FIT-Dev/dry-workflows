@@ -90,6 +90,9 @@ jobs:
     runs-on: [self-hosted]
 
     steps:
+      - name: read bypass_code_scan from fetch-prop jobs
+        run: echo "${{needs.fetch-prop.outputs.bypass_code_scan}}"
+        
       - uses: actions/checkout@v3
 
       - run: docker context use default
