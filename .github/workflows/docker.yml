@@ -91,7 +91,9 @@ jobs:
 
     steps:
       - name: read bypass_code_scan from fetch-prop jobs
-        run: echo "${{needs.fetch-prop.outputs.bypass_code_scan}}"
+        run: |
+              echo "${{needs.fetch-prop.outputs.bypass_code_scan}}"
+              echo "${{needs.fetch-prop.outputs.base_image}}"
         
       - uses: actions/checkout@v3
 
