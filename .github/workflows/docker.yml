@@ -67,7 +67,7 @@ jobs:
 
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/node@master
-        continue-on-error: ${{ fromJSON(needs.fetch-prop.outputs.bypass_code_scan) }}
+        continue-on-error: ${{ needs.fetch-prop.outputs.bypass_code_scan }}
         env:
           SNYK_TOKEN: ${{ secrets.snyk_token }}
         with:
@@ -79,7 +79,7 @@ jobs:
 
     outputs:
       base_image: ${{ steps.mantichor-agent.outputs.base_image }}
-      bypass_code_scan: ${{ toJSON(steps.mantichor-agent.outputs.bypass_code_scan) }}
+      bypass_code_scan: ${{ fromJSON(steps.mantichor-agent.outputs.bypass_code_scan) }}
 
 
     steps:
