@@ -178,7 +178,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           build-args: |
             NODE_BASE=${{fromJSON(steps.setJSON.outputs.baseImageJSON).base_image}}
-            FE_BUILD_ENV=${{ steps.build_command.outputs.command }}
+            FE_BUILD_ENV=${{ github.ref_name }}
             
   container-scan:
     needs: [define, build]
