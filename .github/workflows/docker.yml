@@ -140,6 +140,7 @@ jobs:
         run: echo "::set-output name=baseImageJSON::${{ needs.fetch-prop.outputs.manifest }}"
 
       - run: echo "${{fromJSON(steps.setJSON.outputs.baseImageJSON).base_image}}"
+      - run: echo "${{ env.BUILD_COMMAND }}"
 
       - name: Docker Meta
         id: meta
