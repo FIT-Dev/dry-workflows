@@ -19,7 +19,7 @@ on:
         required: false
         type: string
         default: true
-      branch-source:
+      caller_branch:
         required: false
         type: string
     secrets:
@@ -39,7 +39,7 @@ on:
 env:
   SERVICE_NAME: ${{ inputs.service_name || github.event.repository.name  }}
   STRICT_SCAN: ${{ inputs.strict_scan || false }}
-  BUILD-ENV: ${{ branch-source || "development" }}
+  BUILD_ENV: ${{ caller_branch || "development" }}
 
 jobs:
   define:
