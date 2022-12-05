@@ -39,7 +39,7 @@ on:
 env:
   SERVICE_NAME: ${{ inputs.service_name || github.event.repository.name  }}
   STRICT_SCAN: ${{ inputs.strict_scan || false }}
-  BUILD_ENV: ${{ inputs.caller_branch }}
+  BUILD_COMMAND: ${{ inputs.caller_branch }}
 
 jobs:
   define:
@@ -169,7 +169,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           build-args: |
             NODE_BASE=${{fromJSON(steps.setJSON.outputs.baseImageJSON).base_image}}
-            FE_BUILD_ENV=${{ env.BUILD_ENV }}
+            FE_BUILD_ENV=${{ env.BUILD_COMMAND }}
 
   container-scan:
     needs: [define, build]
