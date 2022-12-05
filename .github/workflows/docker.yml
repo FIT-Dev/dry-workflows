@@ -143,9 +143,18 @@ jobs:
         
       - name: frontend build env
         id: frontend-build
-        run: echo "build-env=${github.event.base_ref}" >> $GITHUB_OUTPUT
+        run: |
+          if (github.event.base_ref == 'refs/heads/production')
+          then
+            echo "build-env=production" >> $GITHUB_OUTPUT
+          elif (github.event.base_ref == 'refs/heads/staging')
+          then
+            echo "build-env=staging" >> $GITHUB_OUTPUT
+          else
+            echo "build-env=development" >> $GITHUB_OUTPUT
+          fi
 
-      - name: Notice Meta
+      - name: Notice Meta and build env
         run: |
               echo "::notice title=meta tag created::${{ steps.meta.outputs.tags }}"
               echo "::notice title=fe build env created::${{ steps.frontend-build.outputs.build-env }}"
