@@ -146,9 +146,7 @@ jobs:
         run: echo "::set-output name=tags::pinjammodal/${{ env.SERVICE_NAME }}:${GITHUB_REF#refs/*/}" 
 
       - name: Notice Meta and build env
-        run: |
-              echo "::notice title=meta tag created::${{ steps.meta.outputs.tags }}"
-              echo "::notice title=fe build env created::${{ steps.frontend-build.outputs.build-env }}"
+        run: echo "::notice title=meta tag created::${{ steps.meta.outputs.tags }}"
 
       - name: Set Context Default
         run: docker context use default
