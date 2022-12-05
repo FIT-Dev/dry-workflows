@@ -154,7 +154,6 @@ jobs:
           then
            echo "command=production" >> $GITHUB_OUTPUT
           else
-          then
            echo "command=development" >> $GITHUB_OUTPUT
           fi
         
