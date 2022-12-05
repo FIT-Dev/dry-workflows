@@ -39,7 +39,7 @@ on:
 env:
   SERVICE_NAME: ${{ inputs.service_name || github.event.repository.name  }}
   STRICT_SCAN: ${{ inputs.strict_scan || false }}
-  BUILD_ENV: ${{ caller_branch || "development" }}
+  BUILD_ENV: ${{ inputs.caller_branch || "development" }}
 
 jobs:
   define:
