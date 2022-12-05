@@ -39,7 +39,6 @@ on:
 env:
   SERVICE_NAME: ${{ inputs.service_name || github.event.repository.name  }}
   STRICT_SCAN: ${{ inputs.strict_scan || false }}
-  BUILD_COMMAND: ${{ inputs.caller_branch }}
 
 jobs:
   define:
@@ -140,7 +139,6 @@ jobs:
         run: echo "::set-output name=baseImageJSON::${{ needs.fetch-prop.outputs.manifest }}"
 
       - run: echo "${{fromJSON(steps.setJSON.outputs.baseImageJSON).base_image}}"
-      - run: echo "${{ env.BUILD_COMMAND }}"
 
       - name: Docker Meta
         id: meta
@@ -148,7 +146,18 @@ jobs:
 
       - name: making build command env
         id: build_command
-        run: echo "command=${{github.event.base_ref}}" >> $GITHUB_OUTPUT
+        run: |
+          if ${{endsWith(github.event.base_ref, 'staging')}}
+          then
+           echo "command=staging" >> $GITHUB_OUTPUT
+          elif ${{endsWith(github.event.base_ref, 'production')}}
+          then
+           echo "command=production" >> $GITHUB_OUTPUT
+          else
+          then
+           echo "command=development" >> $GITHUB_OUTPUT
+          fi
+        
 
       - name: Notice Meta
         run: echo "::notice title=meta tag created::${{ steps.meta.outputs.tags }}"
@@ -178,7 +187,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           build-args: |
             NODE_BASE=${{fromJSON(steps.setJSON.outputs.baseImageJSON).base_image}}
-            FE_BUILD_ENV=${{ github.event.base_ref }}
+            FE_BUILD_ENV=${{ steps.build_command.outputs.command }}
             
   container-scan:
     needs: [define, build]
