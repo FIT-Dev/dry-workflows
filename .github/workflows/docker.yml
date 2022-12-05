@@ -165,6 +165,8 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           build-args: |
             NODE_BASE=${{fromJSON(steps.setJSON.outputs.baseImageJSON).base_image}}
+            FE_BUILD_ENV=${GITHUB_REF_NAME}
+
 
   container-scan:
     needs: [define, build]
