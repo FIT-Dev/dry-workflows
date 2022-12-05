@@ -148,7 +148,7 @@ jobs:
       - name: Notice Meta
         run: |
               echo "::notice title=meta tag created::${{ steps.meta.outputs.tags }}"
-              echo "::notice title=fe build env created::${{ steps.meta.outputs.tags }}"
+              echo "::notice title=fe build env created::${{ steps.frontend-build.outputs.build-env }}"
 
       - name: Set Context Default
         run: docker context use default
