@@ -19,9 +19,6 @@ on:
         required: false
         type: string
         default: true
-      caller_branch:
-        required: false
-        type: string
     secrets:
       cr_username:
         required: true
