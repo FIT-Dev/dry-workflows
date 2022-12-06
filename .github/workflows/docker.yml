@@ -141,8 +141,26 @@ jobs:
         id: meta
         run: echo "::set-output name=tags::pinjammodal/${{ env.SERVICE_NAME }}:${GITHUB_REF#refs/*/}" 
 
+      - name: making build command env
+        id: build_command
+        run: |
+          if ${{endsWith(github.event.base_ref, 'staging')}}
+          then
+           echo "command=staging" >> $GITHUB_OUTPUT
+          elif ${{endsWith(github.event.base_ref, 'production')}}
+          then
+           echo "command=production" >> $GITHUB_OUTPUT
+          else
+           echo "command=development" >> $GITHUB_OUTPUT
+          fi
+        
+
       - name: Notice Meta
         run: echo "::notice title=meta tag created::${{ steps.meta.outputs.tags }}"
+
+      - name: Notice Build Command
+        run: echo "::notice title=build command created::${{ steps.build_command.outputs.command }}"
+
 
       - name: Set Context Default
         run: docker context use default
@@ -165,7 +183,8 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           build-args: |
             NODE_BASE=${{fromJSON(steps.setJSON.outputs.baseImageJSON).base_image}}
-
+            FE_BUILD_ENV=${{ steps.build_command.outputs.command }}
+            
   container-scan:
     needs: [define, build]
     runs-on: [self-hosted]
