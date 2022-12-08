@@ -184,18 +184,6 @@ jobs:
           build-args: |
             NODE_BASE=${{fromJSON(steps.setJSON.outputs.baseImageJSON).base_image}}
             FE_BUILD_ENV=${{ steps.build_command.outputs.command }}
-            
-  container-scan:
-    needs: [define, build]
-    runs-on: ubuntu-latest
-    
-    steps:
-      - run: docker context use default
-
-      - name: Login to Container Registry
-        run: |
-          docker context use default
-          docker login -u ${{ secrets.cr_username }} -p ${{ secrets.cr_token }}
 
       - name: Run Snyk to check Docker image for vulnerabilities
         uses: snyk/actions/docker@master
@@ -205,6 +193,27 @@ jobs:
           image: ${{ needs.build.outputs.imageTag }}
           args: --severity-threshold=high
           command: test
+            
+  # container-scan:
+  #   needs: [define, build]
+  #   runs-on: ubuntu-latest
+    
+  #   steps:
+  #     - run: docker context use default
+
+  #     - name: Login to Container Registry
+  #       run: |
+  #         docker context use default
+  #         docker login -u ${{ secrets.cr_username }} -p ${{ secrets.cr_token }}
+
+  #     - name: Run Snyk to check Docker image for vulnerabilities
+  #       uses: snyk/actions/docker@master
+  #       env:
+  #         SNYK_TOKEN: ${{ secrets.snyk_token }}
+  #       with:
+  #         image: ${{ needs.build.outputs.imageTag }}
+  #         args: --severity-threshold=high
+  #         command: test
 
   push:
     needs: [define, build, container-scan]
