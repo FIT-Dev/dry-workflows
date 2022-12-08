@@ -191,7 +191,7 @@ jobs:
           SNYK_TOKEN: ${{ secrets.snyk_token }}
         with:
           image: ${{ needs.build.outputs.imageTag }}
-          args: --severity-threshold=high
+          args: --severity-threshold=high --file=Dockerfile
           command: test
             
   container-scan:
