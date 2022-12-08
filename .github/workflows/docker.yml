@@ -193,6 +193,14 @@ jobs:
           image: ${{ steps.meta.outputs.tags }}
           args: --severity-threshold=high
           command: test
+
+      - name: Check Build Result
+        run: |
+          docker images | grep ${{ env.SERVICE_NAME }} > tmp_docker
+          if grep -wq ${GITHUB_REF#refs/*/} tmp_docker; then echo "::notice title=image build verified::${{ steps.meta.outputs.tags }} image found" ; else echo "::error title=build error::${{ steps.meta.outputs.tags }} not found"; fi
+
+      - name: Push Docker Image to Container Registry
+        run: docker push ${{ steps.meta.outputs.tags }}
             
   container-scan:
     needs: [define, build]
@@ -219,14 +227,16 @@ jobs:
     needs: [define, build, container-scan]
     runs-on: ubuntu-latest
 
-    steps:
-      - name: Check Build Result
-        run: |
-          docker images | grep ${{ env.SERVICE_NAME }} > tmp_docker
-          if grep -wq ${GITHUB_REF#refs/*/} tmp_docker; then echo "::notice title=image build verified::${{ needs.build.outputs.imageTag }} image found" ; else echo "::error title=build error::${{ needs.build.outputs.imageTag }} not found"; fi
+     steps:
+        - name: check aja
+          run: echo push cuma lewat
+    #   - name: Check Build Result
+    #     run: |
+    #       docker images | grep ${{ env.SERVICE_NAME }} > tmp_docker
+    #       if grep -wq ${GITHUB_REF#refs/*/} tmp_docker; then echo "::notice title=image build verified::${{ needs.build.outputs.imageTag }} image found" ; else echo "::error title=build error::${{ needs.build.outputs.imageTag }} not found"; fi
 
-      - name: Push Docker Image to Container Registry
-        run: docker push ${{ needs.build.outputs.imageTag }}
+    #   - name: Push Docker Image to Container Registry
+    #     run: docker push ${{ needs.build.outputs.imageTag }}
 
   runner-cleanup:
     needs: [define, push]
