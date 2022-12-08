@@ -58,7 +58,7 @@ jobs:
 
   code-scan:
     needs: define
-    runs-on: [self-hosted]
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
@@ -75,7 +75,7 @@ jobs:
           command: test
 
   fetch-prop:
-    runs-on: [self-hosted]
+    runs-on: ubuntu-latest
 
     outputs:
       manifest: ${{ steps.mantichor-agent.outputs.manifest }}
@@ -101,7 +101,7 @@ jobs:
 
   build:
     needs: [fetch-prop, code-scan]
-    runs-on: [self-hosted]
+    runs-on: ubuntu-latest
 
     outputs:
       imageTag: ${{ steps.meta.outputs.tags }}
@@ -187,7 +187,7 @@ jobs:
             
   container-scan:
     needs: [define, build]
-    runs-on: [self-hosted]
+    runs-on: ubuntu-latest
     
     steps:
       - run: docker context use default
@@ -208,7 +208,7 @@ jobs:
 
   push:
     needs: [define, build, container-scan]
-    runs-on: [self-hosted]
+    runs-on: ubuntu-latest
 
     steps:
       - name: Check Build Result
@@ -221,7 +221,7 @@ jobs:
 
   runner-cleanup:
     needs: [define, push]
-    runs-on: [self-hosted]
+    runs-on: ubuntu-latest
 
     steps:
       - name: Prune Images
