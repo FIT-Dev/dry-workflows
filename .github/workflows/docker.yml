@@ -194,17 +194,17 @@ jobs:
           args: --severity-threshold=high
           command: test
             
-  # container-scan:
-  #   needs: [define, build]
-  #   runs-on: ubuntu-latest
+  container-scan:
+    needs: [define, build]
+    runs-on: ubuntu-latest
     
-  #   steps:
-  #     - run: docker context use default
+    steps:
+      - run: docker context use default
 
-  #     - name: Login to Container Registry
-  #       run: |
-  #         docker context use default
-  #         docker login -u ${{ secrets.cr_username }} -p ${{ secrets.cr_token }}
+      - name: Login to Container Registry
+        run: |
+          docker context use default
+          docker login -u ${{ secrets.cr_username }} -p ${{ secrets.cr_token }}
 
   #     - name: Run Snyk to check Docker image for vulnerabilities
   #       uses: snyk/actions/docker@master
