@@ -99,7 +99,7 @@ jobs:
           # target_env: ${{ needs.define.outputs.targetEnv }}
           output_quote: true
 
-  build:
+  build-push:
     needs: [fetch-prop, code-scan]
     runs-on: ubuntu-latest
 
@@ -201,18 +201,24 @@ jobs:
 
       - name: Push Docker Image to Container Registry
         run: docker push ${{ steps.meta.outputs.tags }}
-            
-  container-scan:
-    needs: [define, build]
-    runs-on: ubuntu-latest
-    
-    steps:
-      - run: docker context use default
 
-      - name: Login to Container Registry
+      - name: docker runner cleanup
         run: |
           docker context use default
-          docker login -u ${{ secrets.cr_username }} -p ${{ secrets.cr_token }}
+          docker image prune -a -f
+          docker rmi -f $(docker images -f "dangling=true" -q) || true
+            
+  # container-scan:
+  #   needs: [define, build]
+  #   runs-on: ubuntu-latest
+    
+  #   steps:
+  #     - run: docker context use default
+
+  #     - name: Login to Container Registry
+  #       run: |
+  #         docker context use default
+  #         docker login -u ${{ secrets.cr_username }} -p ${{ secrets.cr_token }}
 
   #     - name: Run Snyk to check Docker image for vulnerabilities
   #       uses: snyk/actions/docker@master
@@ -223,13 +229,13 @@ jobs:
   #         args: --severity-threshold=high
   #         command: test
 
-  push:
-    needs: [define, build, container-scan]
-    runs-on: ubuntu-latest
+  # push:
+  #   needs: [define, build, container-scan]
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: check aja
-        run: echo "push cuma lewat"
+  #   steps:
+  #     - name: check aja
+  #       run: echo "push cuma lewat"
     #   - name: Check Build Result
     #     run: |
     #       docker images | grep ${{ env.SERVICE_NAME }} > tmp_docker
@@ -238,13 +244,13 @@ jobs:
     #   - name: Push Docker Image to Container Registry
     #     run: docker push ${{ needs.build.outputs.imageTag }}
 
-  runner-cleanup:
-    needs: [define, push]
-    runs-on: ubuntu-latest
+  # runner-cleanup:
+  #   needs: [define, build-push]
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: Prune Images
-        run: |
-          docker context use default
-          docker image prune -a -f
-          docker rmi -f $(docker images -f "dangling=true" -q) || true
+  #   steps:
+  #     - name: Prune Images
+  #       run: |
+  #         docker context use default
+  #         docker image prune -a -f
+  #         docker rmi -f $(docker images -f "dangling=true" -q) || true
