@@ -227,9 +227,9 @@ jobs:
     needs: [define, build, container-scan]
     runs-on: ubuntu-latest
 
-     steps:
-        - name: check aja
-          run: echo push cuma lewat
+    steps:
+      - name: check aja
+         run: echo "push cuma lewat"
     #   - name: Check Build Result
     #     run: |
     #       docker images | grep ${{ env.SERVICE_NAME }} > tmp_docker
