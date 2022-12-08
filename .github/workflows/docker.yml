@@ -75,7 +75,7 @@ jobs:
           command: test
 
   fetch-prop:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted]
 
     outputs:
       manifest: ${{ steps.mantichor-agent.outputs.manifest }}
