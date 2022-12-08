@@ -229,7 +229,7 @@ jobs:
 
     steps:
       - name: check aja
-         run: echo "push cuma lewat"
+        run: echo "push cuma lewat"
     #   - name: Check Build Result
     #     run: |
     #       docker images | grep ${{ env.SERVICE_NAME }} > tmp_docker
