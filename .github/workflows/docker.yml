@@ -73,7 +73,7 @@ jobs:
 
       - name: mantichor-agent
         id: mantichor-agent 
-        uses: mantichor/agent@v0.1.6
+        uses: mantichor/agent@v0.1.5
         env:
           mantichor_client_id: ${{secrets.mantichor_client_id}}
           mantichor_client_token: ${{secrets.mantichor_client_token}}
@@ -83,10 +83,7 @@ jobs:
           repository_name: ${{github.repository}}
           repository_url: ${{ steps.vars.outputs.repourl }}
           # target_env: ${{ needs.define.outputs.targetEnv }}
-          output_quote: true
-        run: echo "ngetest aja"
-              
-
+          output_quote: true              
 
   code-scan:
     runs-on: ubuntu-latest
