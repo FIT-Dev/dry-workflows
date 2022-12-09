@@ -92,7 +92,7 @@ jobs:
         run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
 
       - name: Portainer
-        uses: mantichor/portainer-action@v0.1.2
+        uses: mantichor/portainer-action@v0.1.3
         env:
           service_name: ${{ env.SERVICE_NAME }}
           service_manifest: ${{ needs.metadata.outputs.manifest }}
