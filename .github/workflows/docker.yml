@@ -205,7 +205,7 @@ jobs:
       - name: docker runner cleanup
         run: |
           docker context use default
-          docker image prune -a -f
+          docker image rm -f ${{ steps.meta.outputs.tags }}
           docker rmi -f $(docker images -f "dangling=true" -q) || true
             
   # container-scan:
