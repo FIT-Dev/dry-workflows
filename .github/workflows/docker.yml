@@ -87,7 +87,7 @@ jobs:
 
   code-scan:
     runs-on: ubuntu-latest
-
+    needs: [fetch-prop]
     steps:
       - name: read bypass_code_scan from fetch-prop jobs
         run: |
