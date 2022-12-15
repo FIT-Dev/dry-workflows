@@ -58,7 +58,7 @@ jobs:
 
   code-scan:
     needs: define
-    runs-on: [self-hosted]
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
@@ -99,9 +99,9 @@ jobs:
           # target_env: ${{ needs.define.outputs.targetEnv }}
           output_quote: true
 
-  build:
+  build-push:
     needs: [fetch-prop, code-scan]
-    runs-on: [self-hosted]
+    runs-on: ubuntu-latest
 
     outputs:
       imageTag: ${{ steps.meta.outputs.tags }}
@@ -117,20 +117,6 @@ jobs:
       - name: Set output
         id: vars
         run: echo ::set-output name=repourl::${GITHUB_SERVER_URL}/${{github.repository}}
-
-      # - name: mantichor-agent
-      #   id: mantichor-agent 
-      #   uses: mantichor/agent@v0.1.4
-      #   env:
-      #     mantichor_client_id: ${{secrets.mantichor_client_id}}
-      #     mantichor_client_token: ${{secrets.mantichor_client_token}}
-      #     mantichor_url: ${{secrets.mantichor_url}}
-      #     step: build
-      #     service_name: ${{ env.SERVICE_NAME }}
-      #     repository_name: ${{github.repository}}
-      #     repository_url: ${{ steps.vars.outputs.repourl }}
-      #     target_env: ${{ needs.define.outputs.targetEnv }}
-      #     output_quote: true
 
       - id: setJSON
         run: echo "::set-output name=baseImageJSON::${{ needs.fetch-prop.outputs.manifest }}"
@@ -184,48 +170,26 @@ jobs:
           build-args: |
             NODE_BASE=${{fromJSON(steps.setJSON.outputs.baseImageJSON).base_image}}
             FE_BUILD_ENV=${{ steps.build_command.outputs.command }}
-            
-  container-scan:
-    needs: [define, build]
-    runs-on: [self-hosted]
-    
-    steps:
-      - run: docker context use default
-
-      - name: Login to Container Registry
-        run: |
-          docker context use default
-          docker login -u ${{ secrets.cr_username }} -p ${{ secrets.cr_token }}
 
       - name: Run Snyk to check Docker image for vulnerabilities
         uses: snyk/actions/docker@master
         env:
           SNYK_TOKEN: ${{ secrets.snyk_token }}
         with:
-          image: ${{ needs.build.outputs.imageTag }}
+          image: ${{ steps.meta.outputs.tags }}
           args: --severity-threshold=high
           command: test
 
-  push:
-    needs: [define, build, container-scan]
-    runs-on: [self-hosted]
-
-    steps:
       - name: Check Build Result
         run: |
           docker images | grep ${{ env.SERVICE_NAME }} > tmp_docker
           if grep -wq ${GITHUB_REF#refs/*/} tmp_docker; then echo "::notice title=image build verified::${{ steps.meta.outputs.tags }} image found" ; else echo "::error title=build error::${{ steps.meta.outputs.tags }} not found"; fi
 
       - name: Push Docker Image to Container Registry
-        run: docker push ${{ needs.build.outputs.imageTag }}
+        run: docker push ${{ steps.meta.outputs.tags }}
 
-  runner-cleanup:
-    needs: [define, push]
-    runs-on: [self-hosted]
-
-    steps:
-      - name: Prune Images
+      - name: runner builded image cleanup
         run: |
           docker context use default
-          docker image prune -a -f
+          docker image rm -f ${{ steps.meta.outputs.tags }}
           docker rmi -f $(docker images -f "dangling=true" -q) || true
