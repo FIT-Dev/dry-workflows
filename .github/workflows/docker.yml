@@ -123,22 +123,8 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: mantichor-agent
-        id: mantichor-agent 
-        uses: mantichor/agent@development
-        env:
-          mantichor_client_id: ${{secrets.mantichor_client_id}}
-          mantichor_client_token: ${{secrets.mantichor_client_token}}
-          mantichor_url: ${{secrets.mantichor_url}}
-          step: build
-          service_name: ${{ env.SERVICE_NAME }}
-          repository_name: ${{github.repository}}
-          repository_url: ${{ needs.fetch-prop.outputs.repourl }}
-          target_env: ${{ needs.define.outputs.targetEnv }}
-          output_quote: true
-
-#      - id: setJSON
-#        run: echo "baseImageJSON=${{ needs.fetch-prop.outputs.manifest }}" >> $GITHUB_OUTPUT 
+      - id: setJSON
+        run: echo "baseImageJSON=${{ needs.fetch-prop.outputs.manifest }}" >> $GITHUB_OUTPUT 
 
       - name: read base_image from fetch-prop jobs
         run: echo "${{needs.fetch-prop.outputs.base_image}}"
@@ -202,6 +188,7 @@ jobs:
         run: |
           docker images | grep ${{ env.SERVICE_NAME }} > tmp_docker
           if grep -wq poctesting tmp_docker; then echo "::notice title=image build verified::${{ steps.meta.outputs.tags }} image found" ; else echo "::error title=build error::${{ steps.meta.outputs.tags }} not found"; fi
+      
       - name: Push Docker Image to Container Registry
         run: docker push ${{ steps.meta.outputs.tags }}
 
