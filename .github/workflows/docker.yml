@@ -111,7 +111,7 @@ jobs:
 
       - name: Docker Meta
         id: meta
-        run: echo "tags=pinjammodal/${{ env.SERVICE_NAME }}:poctesting" >> $GITHUB_OUTPUT 
+        run: echo "tags=pinjammodal/${{ env.SERVICE_NAME }}:${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT 
 
       - name: define build command env
         id: build_command
@@ -167,7 +167,7 @@ jobs:
       - name: Check Build Result
         run: |
           docker images | grep ${{ env.SERVICE_NAME }} > tmp_docker
-          if grep -wq poctesting tmp_docker; then echo "::notice title=image build verified::${{ steps.meta.outputs.tags }} image found" ; else echo "::error title=build error::${{ steps.meta.outputs.tags }} not found"; fi
+          if grep -wq ${GITHUB_REF#refs/*/} tmp_docker; then echo "::notice title=image build verified::${{ steps.meta.outputs.tags }} image found" ; else echo "::error title=build error::${{ steps.meta.outputs.tags }} not found"; fi
       
       - name: Push Docker Image to Container Registry
         run: docker push ${{ steps.meta.outputs.tags }}
