@@ -64,7 +64,7 @@ jobs:
     outputs:
       base_image: ${{ steps.mantichor-agent.outputs.base_image }}
       bypass_code_scan: ${{ steps.mantichor-agent.outputs.bypass_code_scan }}
-
+      repourl: ${{ steps.vars.outputs.repourl }}
 
     steps:
       - name: Set output repourl
@@ -93,6 +93,7 @@ jobs:
         run: |
               echo "${{needs.fetch-prop.outputs.bypass_code_scan}}"
               echo "${{needs.fetch-prop.outputs.base_image}}"
+              echo "${{needs.fetch-prop.outputs.repourl}}"              
         
       - uses: actions/checkout@v3
 
@@ -132,7 +133,7 @@ jobs:
           step: build
           service_name: ${{ env.SERVICE_NAME }}
           repository_name: ${{github.repository}}
-          repository_url: ${{ steps.vars.outputs.repourl }}
+          repository_url: ${{ needs.fetch-prop.outputs.repourl }}
           target_env: ${{ needs.define.outputs.targetEnv }}
           output_quote: true
 
