@@ -38,56 +38,22 @@ env:
   STRICT_SCAN: ${{ inputs.strict_scan || false }}
 
 jobs:
-  define:
-    runs-on: ubuntu-latest
-
-    outputs:
-      continueOnError: ${{ steps.strictScan.outputs.continueOnError }}
-
-    steps:
-      - id: strictScan
-        run: |
-          if ${{ inputs.strict_scan == 'false'}}
-          then
-            echo "::set-output name=continueOnError::${{ toJSON(true) }}"
-            echo "::notice title=continueOnError::true"
-          else
-            echo "::set-output name=continueOnError::${{ toJSON(false) }}"
-            echo "::notice title=continueOnError::false"
-          fi
-
-  code-scan:
-    needs: define
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - run: docker context use default
-
-      - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/node@master
-        continue-on-error: ${{ fromJSON(needs.define.outputs.continueOnError) }}
-        env:
-          SNYK_TOKEN: ${{ secrets.snyk_token }}
-        with:
-          args: --severity-threshold=high
-          command: test
-
   fetch-prop:
     runs-on: [self-hosted]
 
     outputs:
-      manifest: ${{ steps.mantichor-agent.outputs.manifest }}
+      base_image: ${{ steps.mantichor-agent.outputs.base_image }}
+      bypass_code_scan: ${{ steps.mantichor-agent.outputs.bypass_code_scan }}
+      repourl: ${{ steps.vars.outputs.repourl }}
 
     steps:
-      - name: Set output
+      - name: Set output repourl
         id: vars
-        run: echo ::set-output name=repourl::${GITHUB_SERVER_URL}/${{github.repository}}
+        run: echo "repourl=${GITHUB_SERVER_URL}/${{github.repository}}" >> $GITHUB_OUTPUT
 
       - name: mantichor-agent
         id: mantichor-agent 
-        uses: mantichor/agent@v0.1.4
+        uses: mantichor/agent@v0.1.7
         env:
           mantichor_client_id: ${{secrets.mantichor_client_id}}
           mantichor_client_token: ${{secrets.mantichor_client_token}}
@@ -97,7 +63,30 @@ jobs:
           repository_name: ${{github.repository}}
           repository_url: ${{ steps.vars.outputs.repourl }}
           # target_env: ${{ needs.define.outputs.targetEnv }}
-          output_quote: true
+          output_quote: true              
+
+  code-scan:
+    runs-on: ubuntu-latest
+    needs: [fetch-prop]
+    steps:
+      - name: read bypass_code_scan from fetch-prop jobs
+        run: |
+              echo "${{needs.fetch-prop.outputs.bypass_code_scan}}"
+              echo "${{needs.fetch-prop.outputs.base_image}}"
+              echo "${{needs.fetch-prop.outputs.repourl}}"              
+        
+      - uses: actions/checkout@v3
+
+      - run: docker context use default
+
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@master
+        continue-on-error: ${{ endsWith(needs.fetch-prop.outputs.bypass_code_scan, 'true') }}
+        env:
+          SNYK_TOKEN: ${{ secrets.snyk_token }}
+        with:
+          args: --severity-threshold=high
+          command: test
 
   build-push:
     needs: [fetch-prop, code-scan]
@@ -114,20 +103,17 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Set output
-        id: vars
-        run: echo ::set-output name=repourl::${GITHUB_SERVER_URL}/${{github.repository}}
-
       - id: setJSON
-        run: echo "::set-output name=baseImageJSON::${{ needs.fetch-prop.outputs.manifest }}"
+        run: echo "baseImageJSON=${{ needs.fetch-prop.outputs.manifest }}" >> $GITHUB_OUTPUT 
 
-      - run: echo "${{fromJSON(steps.setJSON.outputs.baseImageJSON).base_image}}"
+      - name: read base_image from fetch-prop jobs
+        run: echo "${{needs.fetch-prop.outputs.base_image}}"
 
       - name: Docker Meta
         id: meta
-        run: echo "::set-output name=tags::pinjammodal/${{ env.SERVICE_NAME }}:${GITHUB_REF#refs/*/}" 
+        run: echo "tags=pinjammodal/${{ env.SERVICE_NAME }}:${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT 
 
-      - name: making build command env
+      - name: define build command env
         id: build_command
         run: |
           if ${{endsWith(github.event.base_ref, 'staging')}}
@@ -139,7 +125,6 @@ jobs:
           else
            echo "command=development" >> $GITHUB_OUTPUT
           fi
-        
 
       - name: Notice Meta
         run: echo "::notice title=meta tag created::${{ steps.meta.outputs.tags }}"
@@ -147,12 +132,11 @@ jobs:
       - name: Notice Build Command
         run: echo "::notice title=build command created::${{ steps.build_command.outputs.command }}"
 
-
       - name: Set Context Default
         run: docker context use default
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v2.0.0
+        uses: docker/login-action@v2.1.0
         with:
           username: ${{ secrets.cr_username }} 
           password: ${{ secrets.cr_token }}
@@ -162,13 +146,13 @@ jobs:
         run: source ${{ inputs.env_file }}
 
       - name: Build Docker
-        uses: docker/build-push-action@v3.1.1
+        uses: docker/build-push-action@v3.2.0
         with:
           context: .
           outputs: type=docker
           tags: ${{ steps.meta.outputs.tags }}
           build-args: |
-            NODE_BASE=${{fromJSON(steps.setJSON.outputs.baseImageJSON).base_image}}
+            NODE_BASE=${{needs.fetch-prop.outputs.base_image}}
             FE_BUILD_ENV=${{ steps.build_command.outputs.command }}
 
       - name: Run Snyk to check Docker image for vulnerabilities
@@ -184,11 +168,11 @@ jobs:
         run: |
           docker images | grep ${{ env.SERVICE_NAME }} > tmp_docker
           if grep -wq ${GITHUB_REF#refs/*/} tmp_docker; then echo "::notice title=image build verified::${{ steps.meta.outputs.tags }} image found" ; else echo "::error title=build error::${{ steps.meta.outputs.tags }} not found"; fi
-
+      
       - name: Push Docker Image to Container Registry
         run: docker push ${{ steps.meta.outputs.tags }}
 
-      - name: runner builded image cleanup
+      - name: runner built image cleanup
         run: |
           docker context use default
           docker image rm -f ${{ steps.meta.outputs.tags }}
