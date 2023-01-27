@@ -157,7 +157,7 @@ jobs:
 
       - name: Run Snyk to check Docker image for vulnerabilities
         uses: snyk/actions/docker@master
-        continue-on-error: ${{ endsWith(needs.fetch-prop.outputs.bypass_code_scan, 'true') }}
+        continue-on-error: ${{ endsWith(needs.fetch-prop.outputs.bypass_code_scan, 'false') }}
         env:
           SNYK_TOKEN: ${{ secrets.snyk_token }}
         with:
