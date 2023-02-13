@@ -67,7 +67,7 @@ jobs:
 
 
   build-push:
-    needs: [fetch-prop, code-scan]
+    needs: [fetch-prop]
     runs-on: ubuntu-latest
 
     outputs:
