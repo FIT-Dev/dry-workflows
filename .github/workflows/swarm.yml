@@ -29,7 +29,7 @@ env:
 jobs:
 
   define:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted]
 
     outputs:
       targetEnv: ${{ steps.targetEnv.outputs.value }}
@@ -63,7 +63,7 @@ jobs:
     steps:
       - name: Fetch Deploy Property
         id: mantichor-agent 
-        uses: mantichor/agent@v0.1.7
+        uses: mantichor/agent@latest
         env:
           mantichor_client_id: ${{secrets.mantichor_client_id}}
           mantichor_client_token: ${{secrets.mantichor_client_token}}
@@ -71,6 +71,9 @@ jobs:
           step: deploy
           service_name: ${{ env.SERVICE_NAME }}
           target_env: ${{ needs.define.outputs.targetEnv }}
+          
+      - name: debug mainfest outputs
+        run: echo ${{ steps.mantichor-agent.outputs.manifest }}
 
   swarm-deploy:
     needs: [metadata, define]
@@ -91,7 +94,7 @@ jobs:
         run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
 
       - name: Portainer
-        uses: mantichor/portainer-action@v0.1.3
+        uses: mantichor/portainer-action@latest
         env:
           service_name: ${{ env.SERVICE_NAME }}
           service_manifest: ${{ needs.metadata.outputs.manifest }}
