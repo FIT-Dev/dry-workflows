@@ -71,6 +71,9 @@ jobs:
           step: deploy
           service_name: ${{ env.SERVICE_NAME }}
           target_env: ${{ needs.define.outputs.targetEnv }}
+          
+      - name: debug mainfest outputs
+        run: echo ${{ steps.mantichor-agent.outputs.manifest }}
 
   swarm-deploy:
     needs: [metadata, define]
