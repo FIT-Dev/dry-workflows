@@ -63,7 +63,7 @@ jobs:
     steps:
       - name: Fetch Deploy Property
         id: mantichor-agent 
-        uses: mantichor/agent@development
+        uses: mantichor/agent@latest
         env:
           mantichor_client_id: ${{secrets.mantichor_client_id}}
           mantichor_client_token: ${{secrets.mantichor_client_token}}
