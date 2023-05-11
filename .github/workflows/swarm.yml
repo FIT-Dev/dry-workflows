@@ -29,7 +29,7 @@ env:
 jobs:
 
   define:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted]
 
     outputs:
       targetEnv: ${{ steps.targetEnv.outputs.value }}
