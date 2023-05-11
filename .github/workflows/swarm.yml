@@ -63,7 +63,7 @@ jobs:
     steps:
       - name: Fetch Deploy Property
         id: mantichor-agent 
-        uses: mantichor/agent@v0.1.7
+        uses: mantichor/agent@v0.1.8
         env:
           mantichor_client_id: ${{secrets.mantichor_client_id}}
           mantichor_client_token: ${{secrets.mantichor_client_token}}
@@ -94,7 +94,7 @@ jobs:
         run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
 
       - name: Portainer
-        uses: mantichor/portainer-action@v0.1.3
+        uses: mantichor/portainer-action@v0.1.4
         env:
           service_name: ${{ env.SERVICE_NAME }}
           service_manifest: ${{ needs.metadata.outputs.manifest }}
