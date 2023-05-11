@@ -97,7 +97,7 @@ jobs:
         uses: mantichor/portainer-action@latest
         env:
           service_name: ${{ env.SERVICE_NAME }}
-          service_manifest: ${{ needs.metadata.outputs.manifest }}
+          service_manifest: fromJson(${{ needs.metadata.outputs.manifest }})
           portainer_url: ${{ secrets.portainer_url }}
           portainer_key: ${{ secrets.portainer_key }}
           commit_tag: ${{ steps.vars.outputs.tag }}
