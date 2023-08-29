@@ -53,7 +53,7 @@ jobs:
 
       - name: mantichor-agent
         id: mantichor-agent 
-        uses: mantichor/agent@v0.1.7
+        uses: mantichor/agent@latest
         env:
           mantichor_client_id: ${{secrets.mantichor_client_id}}
           mantichor_client_token: ${{secrets.mantichor_client_token}}
