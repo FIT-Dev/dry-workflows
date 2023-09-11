@@ -37,11 +37,11 @@ jobs:
     steps:
       - id: targetEnv
         run: |
-          if ${{endsWith(github.event.ref, 'prod')}}
-          then
-            echo "value=prod" >> $GITHUB_OUTPUT
-            echo "::notice title=targetEnv::production"
-          elif ${{endsWith(github.event.ref, 'staging')}}
+          # if ${{endsWith(github.event.ref, 'prod')}}
+          # then
+          #   echo "value=prod" >> $GITHUB_OUTPUT
+          #   echo "::notice title=targetEnv::production"
+          if ${{endsWith(github.event.ref, 'staging')}}
           then
             echo "value=staging" >> $GITHUB_OUTPUT
             echo "::notice title=targetEnv::staging"
