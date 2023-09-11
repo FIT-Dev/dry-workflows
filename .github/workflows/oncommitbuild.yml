@@ -1,4 +1,4 @@
-name: Build Docker Image
+name: Build on commit Docker Image
 
 on:
   workflow_call:
