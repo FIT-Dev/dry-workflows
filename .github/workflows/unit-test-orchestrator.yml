@@ -61,6 +61,7 @@ jobs:
       run: echo "::notice title=stack_name value::${{ steps.stack_check.outputs.stack_name }}"
       
   unit-test-jest:
+    needs: define
     uses: fit-dev/dry-workflows/.github/workflows/unit-test-node-jest.yml@development
     if: ${{ needs.define.outputs.stack_naming == 'jest' }}
     with: 
