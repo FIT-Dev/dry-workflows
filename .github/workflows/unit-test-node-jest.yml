@@ -6,7 +6,7 @@ on:
       node_version:
         description: 'version of node js to run unit test'
         required: false
-        type: int
+        type: number
         default: 12
       bypass_unit_test:
         description: 'whether to skip unit test'
