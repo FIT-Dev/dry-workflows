@@ -28,30 +28,30 @@ jobs:
     - name: Check out the code
       uses: actions/checkout@v4
 
-    - name: node stack parse
-      id: jest_parse
+    - name: node stack check
+      id: jest_check
       run: |
           if ! grep -q '"jest"' package.json; then
           echo "jest_stack=true" >> $GITHUB_OUTPUT 
           exit 1
           fi
-    - name: node stack parse
-      id: mocha_parse
+    - name: mocha stack check
+      id: mocha_check
       run: |
           if ! grep -q '"mocha"' package.json; then
           echo "mocha_stack=true" >> $GITHUB_OUTPUT 
           exit 1
           fi
           
-    - name: stack parse
-      id: stack_parse
+    - name: code stack check
+      id: stack_check
       run: |
-          if ! grep -q '"jest"' package.json; then
-          echo "stack_name=node" >> $GITHUB_OUTPUT 
-          else if ! grep -q '"jest"' package.json; then
-          echo "stack_name=node" >> $GITHUB_OUTPUT 
+          if [[ "$jest_stack" == *"true"* ]]; then
+            echo "stack_name=jest" >> $GITHUB_OUTPUT 
+          else [[ "$mocha_stack" == *"true"* ]]; then
+            echo "stack_name=mocha" >> $GITHUB_OUTPUT 
           else 
-          echo "stack_name=notfound" >> $GITHUB_OUTPUT 
+            echo "stack_name=notfound" >> $GITHUB_OUTPUT 
           exit 1
           fi
 
