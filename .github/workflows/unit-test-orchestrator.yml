@@ -59,7 +59,7 @@ jobs:
           fi
 
   unit-test-jest:
-    if: ${{ needs.define.outputs.stack_naming == 'jest' }}
+    if: ${{ needs.define.outputs.stack_naming == "jest" }}
     uses: fit-dev/dry-workflows/.github/workflows/unit-test-node-jest.yml@development
     with: 
       node_version: ${{ github.event.inputs.node_version }}
