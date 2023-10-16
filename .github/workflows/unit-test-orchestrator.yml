@@ -31,7 +31,7 @@ jobs:
     - name: node stack check
       id: jest_check
       run: |
-          if ! grep -q '"jest"' package.json; then
+          if grep -q '"jest"' package.json; then
           echo "jest_stack=true" >> $GITHUB_OUTPUT 
           fi
     - name: notify jest_stack value
@@ -40,7 +40,7 @@ jobs:
     - name: mocha stack check
       id: mocha_check
       run: |
-          if ! grep -q '"mocha"' package.json; then
+          if grep -q '"mocha"' package.json; then
           echo "mocha_stack=true" >> $GITHUB_OUTPUT 
           fi
     - name: notify mocha_stack value
