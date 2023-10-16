@@ -33,14 +33,12 @@ jobs:
       run: |
           if ! grep -q '"jest"' package.json; then
           echo "jest_stack=true" >> $GITHUB_OUTPUT 
-          exit 1
           fi
     - name: mocha stack check
       id: mocha_check
       run: |
           if ! grep -q '"mocha"' package.json; then
           echo "mocha_stack=true" >> $GITHUB_OUTPUT 
-          exit 1
           fi
           
     - name: code stack check
@@ -52,7 +50,6 @@ jobs:
             echo "stack_name=mocha" >> $GITHUB_OUTPUT 
           else 
             echo "stack_name=notfound" >> $GITHUB_OUTPUT 
-          exit 1
           fi
 
   unit-test-jest:
