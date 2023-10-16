@@ -57,7 +57,9 @@ jobs:
           else 
             echo "stack_name=notfound" >> $GITHUB_OUTPUT 
           fi
-
+    - name: notify stack_name value
+      run: echo "::notice title=stack_name value::${{ steps.stack_check.outputs.stack_name }}"
+      
   unit-test-jest:
     uses: fit-dev/dry-workflows/.github/workflows/unit-test-node-jest.yml@development
     if: ${{ needs.define.outputs.stack_naming == 'jest' }}
