@@ -9,7 +9,6 @@ on:
         type: int
         default: 12
 
-
 jobs:
   build:
     runs-on: ubuntu-latest
