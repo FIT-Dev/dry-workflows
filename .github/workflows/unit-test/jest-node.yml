@@ -1,0 +1,30 @@
+name: Node.js CI using Jest
+
+on:
+  workflow_call:
+    inputs:
+      node_version:
+        description: 'version of node js to run unit test'
+        required: false
+        type: int
+        default: 12
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out the code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ inputs.service_name }}
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run Jest tests
+      run: npm test:ci
