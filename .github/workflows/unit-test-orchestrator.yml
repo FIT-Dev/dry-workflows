@@ -61,7 +61,7 @@ jobs:
       run: echo "::notice title=stack_name value::${{ steps.stack_check.outputs.stack_name }}"
     
     - name: notify unit test are skipped
-      if: ${{ steps.stack_name.outputs.stack_name == 'skiptest }}
+      if: ${{ steps.stack_name.outputs.stack_name == 'skiptest' }}
       run: echo "::notice title=skipping unit test::can't find any unit test module"
       
   jest:
