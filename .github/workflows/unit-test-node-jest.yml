@@ -15,7 +15,7 @@ on:
         default: false
         
 jobs:
-  build:
+  unit-test:
     runs-on: ubuntu-latest
     if: ${{ github.event.inputs.bypass_unit_test != 'true' }}
     steps:
