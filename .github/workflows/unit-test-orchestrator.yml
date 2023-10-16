@@ -22,8 +22,9 @@ jobs:
     if: ${{ github.event.inputs.bypass_unit_test != 'true' }}
     runs-on: [ubuntu-latest]
     outputs:
-      jest_stack: ${{ steps.jest_parse.outputs.jest_stack }}
-      stack_name: ${{ steps.stack_parse.outputs.stack_name }}
+      # jest_stack: ${{ steps.jest_parse.outputs.jest_stack }}
+      # mocha_stack: ${{ steps.mocha_check.outputs.mocha_stack }}
+      stack_naming: ${{ steps.stack_check.outputs.stack_name }}
     steps:
     - name: Check out the code
       uses: actions/checkout@v4
@@ -58,7 +59,7 @@ jobs:
           fi
 
   unit-test-jest:
-    if: ${{ needs.define.outputs.stack_name == 'jest' }}
+    if: ${{ needs.define.outputs.stack_naming == 'jest' }}
     uses: fit-dev/dry-workflows/.github/workflows/unit-test-node-jest.yml@development
     with: 
       node_version: ${{ github.event.inputs.node_version }}
