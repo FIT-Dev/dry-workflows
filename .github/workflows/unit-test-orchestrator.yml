@@ -44,9 +44,9 @@ jobs:
     - name: code stack check
       id: stack_check
       run: |
-          if ${{ steps.jest_check.outputs.jest_stack == "true" }}  ; then
+          if ${{ steps.jest_check.outputs.jest_stack == true }}  ; then
             echo "stack_name=jest" >> $GITHUB_OUTPUT 
-          elif ${{ steps.mocha_check.outputs.mocha_stack == "true" }} ; then
+          elif ${{ steps.mocha_check.outputs.mocha_stack == true }} ; then
             echo "stack_name=mocha" >> $GITHUB_OUTPUT 
           else 
             echo "stack_name=notfound" >> $GITHUB_OUTPUT 
