@@ -55,10 +55,14 @@ jobs:
           elif ${{ steps.mocha_check.outputs.mocha_stack == 'true' }} ; then
             echo "stack_name=mocha" >> $GITHUB_OUTPUT 
           else 
-            echo "stack_name=notfound" >> $GITHUB_OUTPUT 
+            echo "stack_name=skiptest" >> $GITHUB_OUTPUT 
           fi
     - name: notify stack_name value
       run: echo "::notice title=stack_name value::${{ steps.stack_check.outputs.stack_name }}"
+    
+    - name: notify unit test are skipped
+      if: ${{ steps.stack_name.outputs.stack_name == 'skiptest }}
+      run: echo "::notice title=skipping unit test::can't find any unit test module"
       
   jest:
     needs: define
