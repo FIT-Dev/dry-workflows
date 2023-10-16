@@ -34,13 +34,18 @@ jobs:
           if ! grep -q '"jest"' package.json; then
           echo "jest_stack=true" >> $GITHUB_OUTPUT 
           fi
+    - name: notify jest_stack value
+      run: echo "::notice title=jest_stack value::${{ steps.jest_check.outputs.jest_stack }}"
+      
     - name: mocha stack check
       id: mocha_check
       run: |
           if ! grep -q '"mocha"' package.json; then
           echo "mocha_stack=true" >> $GITHUB_OUTPUT 
           fi
-          
+    - name: notify mocha_stack value
+      run: echo "::notice title=jest_stack value::${{ steps.mocha_check.outputs.mocha_stack }}"
+      
     - name: code stack check
       id: stack_check
       run: |
