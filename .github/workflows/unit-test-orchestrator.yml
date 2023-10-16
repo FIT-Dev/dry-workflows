@@ -1,0 +1,62 @@
+name: unit test orchestrator
+
+on:
+  workflow_call:
+    inputs:
+      node_version:
+        description: 'version of node js to run unit test'
+        required: false
+        type: string
+        default: 12
+      bypass_unit_test:
+        description: 'whether to skip unit test'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  node_version: ${{ inputs.node_version }}
+      
+jobs:
+  define: 
+    if: ${{ github.event.inputs.bypass_unit_test != 'true' }}
+    runs-on: [ubuntu-latest]
+    outputs:
+      jest_stack: ${{ steps.jest_parse.outputs.jest_stack }}
+      stack_name: ${{ steps.stack_parse.outputs.stack_name }}
+    steps:
+    - name: Check out the code
+      uses: actions/checkout@v4
+
+    - name: node stack parse
+      id: jest_parse
+      run: |
+          if ! grep -q '"jest"' package.json; then
+          echo "jest_stack=true" >> $GITHUB_OUTPUT 
+          exit 1
+          fi
+    - name: node stack parse
+      id: mocha_parse
+      run: |
+          if ! grep -q '"mocha"' package.json; then
+          echo "mocha_stack=true" >> $GITHUB_OUTPUT 
+          exit 1
+          fi
+          
+    - name: stack parse
+      id: stack_parse
+      run: |
+          if ! grep -q '"jest"' package.json; then
+          echo "stack_name=node" >> $GITHUB_OUTPUT 
+          else if ! grep -q '"jest"' package.json; then
+          echo "stack_name=node" >> $GITHUB_OUTPUT 
+          else 
+          echo "stack_name=notfound" >> $GITHUB_OUTPUT 
+          exit 1
+          fi
+
+  unit-test-jest:
+    if: ${{ needs.define.outputs.stack_name == 'jest' }}
+    uses: fit-dev/dry-workflows/.github/workflows/unit-test-node-jest.yml@development
+    with: 
+      node_version: ${{ github.event.inputs.node_version }}
