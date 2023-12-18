@@ -55,6 +55,18 @@ jobs:
             echo "::set-output name=target_port::$(echo "$manifest" | yq eval '.target_port' -)"
           fi
         
+      - name: define build command env
+        id: build_command
+        run: |
+            if ${{endsWith(github.event.base_ref, 'staging')}}
+            then
+             echo "command=staging" >> $GITHUB_OUTPUT
+            elif ${{endsWith(github.event.base_ref, 'production')}}
+            then
+             echo "command=production" >> $GITHUB_OUTPUT
+            else
+             echo "command=development" >> $GITHUB_OUTPUT
+            fi
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -88,6 +100,7 @@ jobs:
           build-args: |
             NODE_BASE=${{ steps.manifest.outputs.node_bases }}
             TARGET_PORT=${{ steps.manifest.outputs.target_port}}
+            FE_BUILD_ENV=${{ steps.build_command.outputs.command }}
 
       - name: Check Build Result
         run: |
