@@ -141,7 +141,7 @@ jobs:
         if: env.SERVICE == 0
         run: |
           docker service create \
-              --replicas 1 \
+              --replicas 0 \
               --name ${{ env.SERVICE_NAME }} \
               --rollback-parallelism 1 \
               --rollback-delay 10s \
