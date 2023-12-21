@@ -34,7 +34,7 @@ jobs:
       - name: Set manifest deployment
         id: manifest
         run: |
-          cd deployment/templates/
+          cd .github/deployment/templates/
           if ${{endsWith(github.event.ref, 'prod')}}
           then
             manifest=$(cat production.yml)
