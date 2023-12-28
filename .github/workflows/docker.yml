@@ -97,6 +97,7 @@ jobs:
           context: .
           outputs: type=docker
           tags: ${{ steps.meta.outputs.tags }}
+          cache-from: none
           build-args: |
             NODE_BASE=${{ steps.manifest.outputs.node_bases }}
             TARGET_PORT=${{ steps.manifest.outputs.target_port}}
