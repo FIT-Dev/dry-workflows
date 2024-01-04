@@ -169,4 +169,4 @@ jobs:
 
       - name: Restore Docker Context To Default
         if: always()
-        run: docker context use defaul
+        run: docker context use default
