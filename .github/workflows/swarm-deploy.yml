@@ -53,6 +53,12 @@ jobs:
             echo "published_ports=$(echo "$manifest" | yq eval '.published_port' -)" >> $GITHUB_OUTPUT
             echo "target_ports=$(echo "$manifest" | yq eval '.target_port' -)" >> $GITHUB_OUTPUT
             echo "docker_contexts=$(echo "$manifest" | yq eval '.docker_context' -)" >> $GITHUB_OUTPUT
+          elif ${{endsWith(github.event.ref, 'ops')}}
+          then
+            manifest=$(cat operation.yml)
+            echo "published_ports=$(echo "$manifest" | yq eval '.published_port' -)" >> $GITHUB_OUTPUT
+            echo "target_ports=$(echo "$manifest" | yq eval '.target_port' -)" >> $GITHUB_OUTPUT
+            echo "docker_contexts=$(echo "$manifest" | yq eval '.docker_context' -)" >> $GITHUB_OUTPUT
           else
             manifest=$(cat release.yml)
             echo "published_ports=$(echo "$manifest" | yq eval '.published_port' -)" >> $GITHUB_OUTPUT
@@ -74,6 +80,10 @@ jobs:
           then
             echo "value=release" >> $GITHUB_OUTPUT
             echo "::notice title=NODE_ENV::release"
+          elif ${{endsWith(github.event.ref, 'ops')}}
+          then
+            echo "value=release" >> $GITHUB_OUTPUT
+            echo "::notice title=NODE_ENV::operation"
           else
             echo "value=development" >> $GITHUB_OUTPUT
             echo "::notice title=NODE_ENV::development"
