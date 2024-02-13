@@ -38,12 +38,12 @@ jobs:
           then
             manifest=$(cat production.yml)
             if 
-            echo "::set-output name=node_bases::$(echo "$manifest" | yq eval '.base_image' -) || echo "::set-output name=node_bases::$(echo "$manifest" | yq eval '.node_base_image' -)"
+            echo "::set-output name=node_bases::$(echo "$manifest" | yq eval '.base_image' -)" || echo "::set-output name=node_bases::$(echo "$manifest" | yq eval '.node_base_image' -)"
             echo "::set-output name=target_port::$(echo "$manifest" | yq eval '.target_port' -)"
           elif ${{endsWith(github.event.ref, 'dev')}}
           then
             manifest=$(cat development.yml)
-            echo "::set-output name=node_bases::$(echo "$manifest" | yq eval '.base_image' -) || echo "::set-output name=node_bases::$(echo "$manifest" | yq eval '.node_base_image' -)"
+            echo "::set-output name=node_bases::$(echo "$manifest" | yq eval '.base_image' -)" || echo "::set-output name=node_bases::$(echo "$manifest" | yq eval '.node_base_image' -)"
             echo "::set-output name=target_port::$(echo "$manifest" | yq eval '.target_port' -)"
           elif ${{endsWith(github.event.ref, 'staging')}}
           then
