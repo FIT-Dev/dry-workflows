@@ -26,6 +26,7 @@ jobs:
       publishedPort: ${{ steps.manifest.outputs.published_ports }}
       targetPort: ${{ steps.manifest.outputs.target_ports }}
       dockerContext: ${{ steps.manifest.outputs.docker_contexts }}
+      maxReplica: ${{ steps.manifest.outputs.max_replicas }}
 
     steps:
       - name: Checkout Repository
@@ -41,29 +42,34 @@ jobs:
             echo "published_ports=$(echo "$manifest" | yq eval '.published_port' -)" >> $GITHUB_OUTPUT
             echo "target_ports=$(echo "$manifest" | yq eval '.target_port' -)" >> $GITHUB_OUTPUT
             echo "docker_contexts=$(echo "$manifest" | yq eval '.docker_context' -)" >> $GITHUB_OUTPUT
+            echo "max_replicas=$(echo "$manifest" | yq eval '.max_replica' -)" >> $GITHUB_OUTPUT
           elif ${{endsWith(github.event.ref, 'dev')}}
           then
             manifest=$(cat development.yml)
             echo "published_ports=$(echo "$manifest" | yq eval '.published_port' -)" >> $GITHUB_OUTPUT
             echo "target_ports=$(echo "$manifest" | yq eval '.target_port' -)" >> $GITHUB_OUTPUT
             echo "docker_contexts=$(echo "$manifest" | yq eval '.docker_context' -)" >> $GITHUB_OUTPUT
+            echo "max_replicas=$(echo "$manifest" | yq eval '.max_replica' -)" >> $GITHUB_OUTPUT
           elif ${{endsWith(github.event.ref, 'staging')}}
           then
             manifest=$(cat staging.yml)
             echo "published_ports=$(echo "$manifest" | yq eval '.published_port' -)" >> $GITHUB_OUTPUT
             echo "target_ports=$(echo "$manifest" | yq eval '.target_port' -)" >> $GITHUB_OUTPUT
             echo "docker_contexts=$(echo "$manifest" | yq eval '.docker_context' -)" >> $GITHUB_OUTPUT
+            echo "max_replicas=$(echo "$manifest" | yq eval '.max_replica' -)" >> $GITHUB_OUTPUT
           elif ${{endsWith(github.event.ref, 'ops')}}
           then
             manifest=$(cat operation.yml)
             echo "published_ports=$(echo "$manifest" | yq eval '.published_port' -)" >> $GITHUB_OUTPUT
             echo "target_ports=$(echo "$manifest" | yq eval '.target_port' -)" >> $GITHUB_OUTPUT
             echo "docker_contexts=$(echo "$manifest" | yq eval '.docker_context' -)" >> $GITHUB_OUTPUT
+            echo "max_replicas=$(echo "$manifest" | yq eval '.max_replica' -)" >> $GITHUB_OUTPUT
           else
             manifest=$(cat release.yml)
             echo "published_ports=$(echo "$manifest" | yq eval '.published_port' -)" >> $GITHUB_OUTPUT
             echo "target_ports=$(echo "$manifest" | yq eval '.target_port' -)" >> $GITHUB_OUTPUT
             echo "docker_contexts=$(echo "$manifest" | yq eval '.docker_context' -)" >> $GITHUB_OUTPUT
+            echo "max_replicas=$(echo "$manifest" | yq eval '.max_replica' -)" >> $GITHUB_OUTPUT
           fi
 
       - id: nodeEnv
@@ -93,7 +99,8 @@ jobs:
         run: |
           echo "::notice title=manifest published_port created::${{ steps.manifest.outputs.published_ports }}"
           echo "::notice title=manifest target_port created::${{ steps.manifest.outputs.target_ports }}"
-          echo "::notice title=manifest docker_context created::${{ steps.manifest.outputs.docker_contexts }}"    
+          echo "::notice title=manifest docker_context created::${{ steps.manifest.outputs.docker_contexts }}"
+          echo "::notice title=manifest max_replica created::${{ steps.manifest.outputs.max_replicas }}"    
       
   metadata:
     runs-on: ubuntu-latest 
@@ -127,6 +134,7 @@ jobs:
 
       - name: Check stack
         run: echo "SERVICE=$(docker service ls | grep -c ${{ env.SERVICE_NAME }}[[:space:]])" >> $GITHUB_ENV
+             echo "MAX_REPLICA=${{ needs.metadata.outputs.maxReplica }}[[:space:]])" >> $GITHUB_ENV
 
       - uses: actions/setup-node@v3
         if: env.SERVICE == 0
@@ -180,5 +188,5 @@ jobs:
         run: docker service update --health-retries 3 --health-interval 5s --limit-cpu 1.0 --limit-memory 2048M --with-registry-auth --image ${{ needs.metadata.outputs.imageTag }} ${{ env.SERVICE_NAME }}
       
       - name: Restore Docker Context To Default
-        if: always()
+        if: always()x
         run: docker context use default
