@@ -188,5 +188,5 @@ jobs:
         run: docker service update --health-retries 3 --health-interval 5s --limit-cpu 1.0 --limit-memory 2048M --with-registry-auth --image ${{ needs.metadata.outputs.imageTag }} ${{ env.SERVICE_NAME }}
       
       - name: Restore Docker Context To Default
-        if: always()x
+        if: always()
         run: docker context use default
