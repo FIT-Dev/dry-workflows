@@ -156,7 +156,7 @@ jobs:
         run: docker pull ${{ needs.metadata.outputs.imageTag }}
 
       - name: Stack deploy
-        if: env.SERVICE == 0 && ${{ needs.define.outputs.maxReplica }} == 'null'
+        if: env.SERVICE == 0 && ${{ needs.define.outputs.maxReplica }} == null
         run: |
           docker service create \
               --replicas 0 \
@@ -213,7 +213,7 @@ jobs:
               ${{ needs.metadata.outputs.imageTag }}
 
       - name: Update current service
-        if: env.SERVICE == 1 && ${{ needs.define.outputs.maxReplica }} == 'null'
+        if: env.SERVICE == 1 && ${{ needs.define.outputs.maxReplica }} == null
         run: docker service update --health-retries 3 --health-interval 5s --limit-cpu 1.0 --limit-memory 2048M --with-registry-auth --image ${{ needs.metadata.outputs.imageTag }} ${{ env.SERVICE_NAME }}
       
       - name: Update current service max replica
