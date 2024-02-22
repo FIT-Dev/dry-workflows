@@ -134,7 +134,7 @@ jobs:
 
       - name: Check stack
         run: echo "SERVICE=$(docker service ls | grep -c ${{ env.SERVICE_NAME }}[[:space:]])" >> $GITHUB_ENV
-            #  echo "MAX_REPLICA=${{ needs.define.outputs.maxReplica }}" >> $GITHUB_ENV
+             echo "MAX_REPLICA=$(${{ needs.define.outputs.maxReplica }}[[:space:]])" >> $GITHUB_ENV
 
       - uses: actions/setup-node@v3
         if: env.SERVICE == 0
@@ -156,8 +156,8 @@ jobs:
         run: docker pull ${{ needs.metadata.outputs.imageTag }}
 
       - name: Stack deploy
-        if: env.SERVICE == 0 && ${{ needs.define.outputs.maxReplica }} == null
-        run: |
+        if: env.SERVICE == 0 && env.MAX_REPLICA == null
+        run: 
           docker service create \
               --replicas 0 \
               --name ${{ env.SERVICE_NAME }} \
@@ -184,7 +184,7 @@ jobs:
               ${{ needs.metadata.outputs.imageTag }}
 
       - name: Stack deploy Max Replica
-        if: env.SERVICE == 0 && ${{ needs.define.outputs.maxReplica }} == 1
+        if: env.SERVICE == 0 && env.MAX_REPLICA == 1
         run: |
           docker service create \
               --replicas 0 \
@@ -213,11 +213,11 @@ jobs:
               ${{ needs.metadata.outputs.imageTag }}
 
       - name: Update current service
-        if: env.SERVICE == 1 && ${{ needs.define.outputs.maxReplica }} == null
+        if: env.SERVICE == 1 && env.MAX_REPLICA == null
         run: docker service update --health-retries 3 --health-interval 5s --limit-cpu 1.0 --limit-memory 2048M --with-registry-auth --image ${{ needs.metadata.outputs.imageTag }} ${{ env.SERVICE_NAME }}
       
       - name: Update current service max replica
-        if: env.SERVICE == 1 && ${{ needs.define.outputs.maxReplica }} == 1
+        if: env.SERVICE == 1 && env.MAX_REPLICA == 1
         run: docker service update --replicas-max-per-node 1 --health-retries 3 --health-interval 5s --limit-cpu 1.0 --limit-memory 2048M --with-registry-auth --image ${{ needs.metadata.outputs.imageTag }} ${{ env.SERVICE_NAME }}
         
       - name: Restore Docker Context To Default
