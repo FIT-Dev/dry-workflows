@@ -156,7 +156,7 @@ jobs:
         run: docker pull ${{ needs.metadata.outputs.imageTag }}
 
       - name: Stack deploy
-        if: env.SERVICE == 0
+        if: env.SERVICE == 0 && ${{ needs.define.outputs.maxReplica }} == 'null'
         run: |
           docker service create \
               --replicas 0 \
@@ -183,42 +183,42 @@ jobs:
               --mount source=${{ env.SERVICE_NAME }}_tmp,target=/usr/src/app/tmp \
               ${{ needs.metadata.outputs.imageTag }}
 
-      # - name: Stack deploy Max Replica
-      #   if: (env.SERVICE == '0') && (env.MAX_REPLICA == '1')
-      #   run: |
-      #     docker service create \
-      #         --replicas 0 \
-      #         --replicas-max-per-node ${{ needs.define.outputs.maxReplica }} \
-      #         --name ${{ env.SERVICE_NAME }} \
-      #         --rollback-parallelism 1 \
-      #         --rollback-delay 10s \
-      #         --rollback-order start-first \
-      #         --update-delay 10s \
-      #         --update-parallelism 1 \
-      #         --update-failure-action rollback \
-      #         --restart-condition on-failure \
-      #         --restart-delay 5s \
-      #         --restart-max-attempts 2 \
-      #         --env SERVICE_NAME=${{ env.SERVICE_NAME }} \
-      #         --env PORT=${{ needs.define.outputs.targetPort }} \
-      #         --env NODE_ENV=${{ needs.define.outputs.nodeEnv }} \
-      #         --network public \
-      #         --publish published=${{ needs.define.outputs.publishedPort }},target=${{ needs.define.outputs.targetPort }},mode=ingress \
-      #         --limit-cpu 1.0 \
-      #         --limit-memory 2048M \
-      #         --mount type=bind,source=/etc/timezone,target=/etc/timezone,readonly \
-      #         --mount type=bind,source=/etc/localtime,target=/etc/localtime,readonly \
-      #         --mount source=${{ env.SERVICE_NAME }}_logs,target=/usr/src/app/logs \
-      #         --mount source=${{ env.SERVICE_NAME }}_tmp,target=/usr/src/app/tmp \
-      #         ${{ needs.metadata.outputs.imageTag }}
+      - name: Stack deploy Max Replica
+        if: env.SERVICE == 0 && ${{ needs.define.outputs.maxReplica }} == 1
+        run: |
+          docker service create \
+              --replicas 0 \
+              --replicas-max-per-node ${{ needs.define.outputs.maxReplica }} \
+              --name ${{ env.SERVICE_NAME }} \
+              --rollback-parallelism 1 \
+              --rollback-delay 10s \
+              --rollback-order start-first \
+              --update-delay 10s \
+              --update-parallelism 1 \
+              --update-failure-action rollback \
+              --restart-condition on-failure \
+              --restart-delay 5s \
+              --restart-max-attempts 2 \
+              --env SERVICE_NAME=${{ env.SERVICE_NAME }} \
+              --env PORT=${{ needs.define.outputs.targetPort }} \
+              --env NODE_ENV=${{ needs.define.outputs.nodeEnv }} \
+              --network public \
+              --publish published=${{ needs.define.outputs.publishedPort }},target=${{ needs.define.outputs.targetPort }},mode=ingress \
+              --limit-cpu 1.0 \
+              --limit-memory 2048M \
+              --mount type=bind,source=/etc/timezone,target=/etc/timezone,readonly \
+              --mount type=bind,source=/etc/localtime,target=/etc/localtime,readonly \
+              --mount source=${{ env.SERVICE_NAME }}_logs,target=/usr/src/app/logs \
+              --mount source=${{ env.SERVICE_NAME }}_tmp,target=/usr/src/app/tmp \
+              ${{ needs.metadata.outputs.imageTag }}
 
       - name: Update current service
         if: env.SERVICE == 1 && ${{ needs.define.outputs.maxReplica }} == 'null'
         run: docker service update --health-retries 3 --health-interval 5s --limit-cpu 1.0 --limit-memory 2048M --with-registry-auth --image ${{ needs.metadata.outputs.imageTag }} ${{ env.SERVICE_NAME }}
       
-      # - name: Update current service max replica
-      #   if: (env.SERVICE == '1') && (env.MAX_REPLICA == '1')
-      #   run: docker service update --replicas-max-per-node 1 --health-retries 3 --health-interval 5s --limit-cpu 1.0 --limit-memory 2048M --with-registry-auth --image ${{ needs.metadata.outputs.imageTag }} ${{ env.SERVICE_NAME }}
+      - name: Update current service max replica
+        if: env.SERVICE == 1 && ${{ needs.define.outputs.maxReplica }} == 1
+        run: docker service update --replicas-max-per-node 1 --health-retries 3 --health-interval 5s --limit-cpu 1.0 --limit-memory 2048M --with-registry-auth --image ${{ needs.metadata.outputs.imageTag }} ${{ env.SERVICE_NAME }}
         
       - name: Restore Docker Context To Default
         if: always()
