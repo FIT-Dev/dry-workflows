@@ -157,7 +157,7 @@ jobs:
         run: docker pull ${{ needs.metadata.outputs.imageTag }}
 
       - name: Stack deploy
-        if: ((env.SERVICE == 0) && (env.MAX_REPLICA == null))
+        if: ((env.SERVICE == 0) && (env.MAX_REPLICA == 'null'))
         run: 
           docker service create \
               --replicas 0 \
