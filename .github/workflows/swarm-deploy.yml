@@ -158,7 +158,7 @@ jobs:
 
       - name: Stack deploy
         if: env.SERVICE == 0
-        run: 
+        run: | 
           docker service create \
               --replicas 0 \
               --name ${{ env.SERVICE_NAME }} \
