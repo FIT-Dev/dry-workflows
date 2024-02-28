@@ -37,22 +37,27 @@ jobs:
           if ${{endsWith(github.event.ref, 'prod')}}
           then
             manifest=$(cat production.yml)
-            echo "::set-output name=node_bases::$(echo "$manifest" | yq eval '.node_base_image' -)"
-            echo "::set-output name=target_port::$(echo "$manifest" | yq eval '.target_port' -)"
+            echo "node_bases=$(echo "$manifest" | yq eval '.node_base_image' -)" >> $GITHUB_OUTPUT
+            echo "target_port=$(echo "$manifest" | yq eval '.target_port' -)" >> $GITHUB_OUTPUT
           elif ${{endsWith(github.event.ref, 'dev')}}
           then
             manifest=$(cat development.yml)
-            echo "::set-output name=node_bases::$(echo "$manifest" | yq eval '.node_base_image' -)"
-            echo "::set-output name=target_port::$(echo "$manifest" | yq eval '.target_port' -)"
+            echo "node_bases=$(echo "$manifest" | yq eval '.node_base_image' -)" >> $GITHUB_OUTPUT
+            echo "target_port=$(echo "$manifest" | yq eval '.target_port' -)" >> $GITHUB_OUTPUT
           elif ${{endsWith(github.event.ref, 'staging')}}
           then
             manifest=$(cat staging.yml)
-            echo "::set-output name=node_bases::$(echo "$manifest" | yq eval '.node_base_image' -)"
-            echo "::set-output name=target_port::$(echo "$manifest" | yq eval '.target_port' -)"
+            echo "node_bases=$(echo "$manifest" | yq eval '.node_base_image' -)" >> $GITHUB_OUTPUT
+            echo "target_port=$(echo "$manifest" | yq eval '.target_port' -)" >> $GITHUB_OUTPUT
+          elif ${{endsWith(github.event.ref, 'ops')}}
+          then
+            manifest=$(cat operation.yml)
+            echo "node_bases=$(echo "$manifest" | yq eval '.node_base_image' -)" >> $GITHUB_OUTPUT
+            echo "target_port=$(echo "$manifest" | yq eval '.target_port' -)" >> $GITHUB_OUTPUT
           else
             manifest=$(cat release.yml)
-            echo "::set-output name=node_bases::$(echo "$manifest" | yq eval '.node_base_image' -)"
-            echo "::set-output name=target_port::$(echo "$manifest" | yq eval '.target_port' -)"
+            echo "node_bases=$(echo "$manifest" | yq eval '.node_base_image' -)" >> $GITHUB_OUTPUT
+            echo "target_port=$(echo "$manifest" | yq eval '.target_port' -)" >> $GITHUB_OUTPUT
           fi
         
       - name: define build command env
@@ -64,6 +69,9 @@ jobs:
             elif ${{endsWith(github.event.base_ref, 'production')}}
             then
              echo "command=production" >> $GITHUB_OUTPUT
+            elif ${{endsWith(github.event.ref, 'ops')}}
+            then
+             echo "command=operation" >> $GITHUB_OUTPUT
             else
              echo "command=development" >> $GITHUB_OUTPUT
             fi
