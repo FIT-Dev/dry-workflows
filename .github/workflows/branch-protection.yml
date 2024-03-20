@@ -14,6 +14,7 @@ jobs:
               echo "Merge requests are permitted as the source branch is from feature or hotfix branch"
             else 
               echo "Merge requests to production branch are forbidden as the PR only allowed to come from feature or hotfix branch."
+              ::error title="Declining Merge Request" message="Merge requests to production branch are forbidden as the PR only allowed to come from feature or hotfix branch.' is not present."
               exit 1
             fi
           fi
